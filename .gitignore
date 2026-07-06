@@ -216,3 +216,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Brain Tumour AI
+data/raw/
+data/processed/
+outputs/
+
+# Trained models
+models/*.keras
+models/*.h5
+models/*.pth
+models/*.pt
