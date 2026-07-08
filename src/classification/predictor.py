@@ -15,7 +15,7 @@ class Predictor:
             "pituitary",
         ]
 
-    def predict(self, image_path):
+    def preprocess(self, image_path):
 
         image = tf.keras.utils.load_img(
             image_path,
@@ -29,17 +29,23 @@ class Predictor:
             axis=0,
         )
 
+        return image
+
+    def predict(self, image_path):
+
+        image = self.preprocess(image_path)
+
         predictions = self.model.predict(
             image,
             verbose=0,
-        )
-
-        confidence = float(
-            np.max(predictions)
-        )
+        )[0]
 
         predicted_index = int(
             np.argmax(predictions)
+        )
+
+        confidence = float(
+            predictions[predicted_index]
         )
 
         return (
