@@ -216,3 +216,30 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Brain Tumour AI
+data/raw/
+data/processed/
+outputs/
+
+# Trained models
+models/*.keras
+models/*.h5
+models/*.pth
+models/*.pt
+
+# Virtual environments
+.venv/
+.venv-gradcam/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Output files
+outputs/
+gradcam_output.txt
+
+# OS files
+.DS_Store
+Thumbs.db
