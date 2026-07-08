@@ -4,7 +4,8 @@ from src.classification.trainer import Trainer
 
 
 train_dataset, validation_dataset = load_datasets(
-    "data/processed/classification/train"
+    "data/processed/classification/train",
+    "data/processed/classification/val",
 )
 
 model = build_model(4)
