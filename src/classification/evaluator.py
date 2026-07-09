@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -63,6 +64,23 @@ class Evaluator:
         ) as file:
 
             file.write(report)
+
+        metrics = classification_report(
+            all_labels,
+            all_predictions,
+            output_dict=True,
+        )
+
+        with open(
+            reports_dir / "metrics.json",
+            "w",
+        ) as file:
+
+            json.dump(
+                metrics,
+                file,
+                indent=4,
+            )
 
         cm = confusion_matrix(
             all_labels,
