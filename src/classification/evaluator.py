@@ -6,7 +6,10 @@ from sklearn.metrics import (
     ConfusionMatrixDisplay,
     classification_report,
     confusion_matrix,
+    roc_curve,
+    auc,
 )
+from sklearn.preprocessing import label_binarize
 
 
 class Evaluator:
@@ -18,6 +21,7 @@ class Evaluator:
 
         all_predictions = []
         all_labels = []
+        all_probabilities = []
 
         for images, labels in dataset:
 
@@ -25,6 +29,8 @@ class Evaluator:
                 images,
                 verbose=0,
             )
+
+            all_probabilities.extend(predictions)
 
             predicted_labels = np.argmax(
                 predictions,
@@ -88,6 +94,53 @@ class Evaluator:
 
         plt.savefig(
             plots_dir / "confusion_matrix.png",
+            dpi=300,
+            bbox_inches="tight",
+        )
+
+        plt.close()
+
+        all_labels = np.array(all_labels)
+        all_probabilities = np.array(all_probabilities)
+
+        binary_labels = label_binarize(
+            all_labels,
+            classes=[0, 1, 2, 3],
+        )
+
+        plt.figure(figsize=(8, 6))
+
+        for index in range(4):
+
+            fpr, tpr, _ = roc_curve(
+                binary_labels[:, index],
+                all_probabilities[:, index],
+            )
+
+            roc_auc = auc(
+                fpr,
+                tpr,
+            )
+
+            plt.plot(
+                fpr,
+                tpr,
+                label=f"Class {index} (AUC = {roc_auc:.3f})",
+            )
+
+        plt.plot(
+            [0, 1],
+            [0, 1],
+            linestyle="--",
+        )
+
+        plt.xlabel("False Positive Rate")
+        plt.ylabel("True Positive Rate")
+        plt.title("ROC Curve")
+        plt.legend()
+
+        plt.savefig(
+            plots_dir / "roc_curve.png",
             dpi=300,
             bbox_inches="tight",
         )
