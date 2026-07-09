@@ -1,7 +1,10 @@
 import tensorflow as tf
 
 
-def build_model(num_classes):
+def build_model(
+    num_classes,
+    fine_tune=False,
+):
 
     base_model = tf.keras.applications.ResNet50(
         weights="imagenet",
@@ -9,17 +12,24 @@ def build_model(num_classes):
         input_shape=(224, 224, 3),
     )
 
-    base_model.trainable = False
+    if fine_tune:
+
+        base_model.trainable = True
+
+        for layer in base_model.layers[:-30]:
+            layer.trainable = False
+
+    else:
+
+        base_model.trainable = False
 
     inputs = tf.keras.Input(
         shape=(224, 224, 3),
         name="input_image",
     )
 
-    x = inputs
-
     x = base_model(
-        x,
+        inputs,
         training=False,
     )
 

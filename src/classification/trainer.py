@@ -6,15 +6,18 @@ class Trainer:
     def __init__(self, model):
         self.model = model
 
-    def compile(self):
+    def compile(
+        self,
+        learning_rate=0.001,
+    ):
 
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(
-                learning_rate=0.001
+                learning_rate=learning_rate,
             ),
             loss=tf.keras.losses.SparseCategoricalCrossentropy(),
             metrics=[
-                "accuracy"
+                "accuracy",
             ],
         )
 
