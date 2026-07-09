@@ -8,6 +8,8 @@ from sklearn.metrics import (
     confusion_matrix,
     roc_curve,
     auc,
+    precision_recall_curve,
+    average_precision_score,
 )
 from sklearn.preprocessing import label_binarize
 
@@ -141,6 +143,39 @@ class Evaluator:
 
         plt.savefig(
             plots_dir / "roc_curve.png",
+            dpi=300,
+            bbox_inches="tight",
+        )
+
+        plt.close()
+
+        plt.figure(figsize=(8, 6))
+
+        for index in range(4):
+
+            precision, recall, _ = precision_recall_curve(
+                binary_labels[:, index],
+                all_probabilities[:, index],
+            )
+
+            average_precision = average_precision_score(
+                binary_labels[:, index],
+                all_probabilities[:, index],
+            )
+
+            plt.plot(
+                recall,
+                precision,
+                label=f"Class {index} (AP = {average_precision:.3f})",
+            )
+
+        plt.xlabel("Recall")
+        plt.ylabel("Precision")
+        plt.title("Precision-Recall Curve")
+        plt.legend()
+
+        plt.savefig(
+            plots_dir / "precision_recall_curve.png",
             dpi=300,
             bbox_inches="tight",
         )
