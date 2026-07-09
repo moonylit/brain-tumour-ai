@@ -1,5 +1,9 @@
+from pathlib import Path
+
+import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import (
+    ConfusionMatrixDisplay,
     classification_report,
     confusion_matrix,
 )
@@ -17,7 +21,10 @@ class Evaluator:
 
         for images, labels in dataset:
 
-            predictions = self.model.predict(images, verbose=0)
+            predictions = self.model.predict(
+                images,
+                verbose=0,
+            )
 
             predicted_labels = np.argmax(
                 predictions,
@@ -27,21 +34,62 @@ class Evaluator:
             all_predictions.extend(predicted_labels)
             all_labels.extend(labels.numpy())
 
-        print("\nClassification Report\n")
+        report = classification_report(
+            all_labels,
+            all_predictions,
+            digits=4,
+        )
 
-        print(
-            classification_report(
-                all_labels,
-                all_predictions,
-                digits=4,
-            )
+        print("\nClassification Report\n")
+        print(report)
+
+        reports_dir = Path("outputs/reports")
+        reports_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        with open(
+            reports_dir / "classification_report.txt",
+            "w",
+        ) as file:
+
+            file.write(report)
+
+        cm = confusion_matrix(
+            all_labels,
+            all_predictions,
         )
 
         print("\nConfusion Matrix\n")
+        print(cm)
 
-        print(
-            confusion_matrix(
-                all_labels,
-                all_predictions,
-            )
+        plots_dir = Path("outputs/plots")
+        plots_dir.mkdir(
+            parents=True,
+            exist_ok=True,
         )
+
+        display = ConfusionMatrixDisplay(
+            confusion_matrix=cm,
+        )
+
+        figure, axis = plt.subplots(
+            figsize=(6, 6),
+        )
+
+        display.plot(
+            ax=axis,
+            cmap="Blues",
+            colorbar=False,
+        )
+
+        plt.title("Confusion Matrix")
+
+        plt.savefig(
+            plots_dir / "confusion_matrix.png",
+            dpi=300,
+            bbox_inches="tight",
+        )
+
+        plt.close()
