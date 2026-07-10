@@ -1,11 +1,18 @@
 import tensorflow as tf
 
+from src.config import (
+    IMAGE_SIZE,
+    BATCH_SIZE,
+)
+
 AUTOTUNE = tf.data.AUTOTUNE
 
 
 def preprocess(image, label):
 
-    image = tf.keras.applications.resnet.preprocess_input(image)
+    image = tf.keras.applications.resnet.preprocess_input(
+        image,
+    )
 
     return image, label
 
@@ -13,8 +20,8 @@ def preprocess(image, label):
 def load_datasets(
     train_dir,
     val_dir,
-    image_size=(224, 224),
-    batch_size=32,
+    image_size=IMAGE_SIZE,
+    batch_size=BATCH_SIZE,
 ):
 
     train_dataset = tf.keras.utils.image_dataset_from_directory(
@@ -41,8 +48,12 @@ def load_datasets(
         num_parallel_calls=AUTOTUNE,
     )
 
-    train_dataset = train_dataset.prefetch(AUTOTUNE)
+    train_dataset = train_dataset.prefetch(
+        AUTOTUNE,
+    )
 
-    validation_dataset = validation_dataset.prefetch(AUTOTUNE)
+    validation_dataset = validation_dataset.prefetch(
+        AUTOTUNE,
+    )
 
     return train_dataset, validation_dataset
