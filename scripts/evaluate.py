@@ -1,18 +1,26 @@
 from tensorflow.keras.models import load_model
 
+from src.config import (
+    TRAIN_DIR,
+    VALIDATION_DIR,
+    MODEL_PATH,
+)
+
 from src.classification.dataset import load_datasets
 from src.classification.evaluator import Evaluator
 
 
 train_dataset, validation_dataset = load_datasets(
-    "data/processed/classification/train",
-    "data/processed/classification/val",
+    TRAIN_DIR,
+    VALIDATION_DIR,
 )
 
 model = load_model(
-    "models/resnet50_best.keras"
+    MODEL_PATH,
 )
 
 evaluator = Evaluator(model)
 
-evaluator.evaluate(validation_dataset)
+evaluator.evaluate(
+    validation_dataset,
+)

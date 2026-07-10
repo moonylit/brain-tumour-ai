@@ -1,6 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
+from src.config import IMAGE_SIZE
+
 
 class GradCAM:
 
@@ -12,15 +14,20 @@ class GradCAM:
 
         image = tf.keras.utils.load_img(
             image_path,
-            target_size=(224, 224),
+            target_size=IMAGE_SIZE,
         )
 
-        image = tf.keras.utils.img_to_array(image)
+        image = tf.keras.utils.img_to_array(
+            image,
+        )
 
-        image = np.expand_dims(image, axis=0)
+        image = np.expand_dims(
+            image,
+            axis=0,
+        )
 
         image = tf.keras.applications.resnet.preprocess_input(
-            image
+            image,
         )
 
         return image
@@ -32,11 +39,11 @@ class GradCAM:
     ):
 
         base_model = self.model.get_layer(
-            "resnet50"
+            "resnet50",
         )
 
         last_conv_layer = base_model.get_layer(
-            last_conv_layer_name
+            last_conv_layer_name,
         )
 
         classifier = tf.keras.Sequential(
@@ -54,7 +61,9 @@ class GradCAM:
                 last_conv_layer.output,
             )(image)
 
-            tape.watch(conv_outputs)
+            tape.watch(
+                conv_outputs,
+            )
 
             predictions = classifier(
                 conv_outputs,
@@ -62,7 +71,7 @@ class GradCAM:
             )
 
             pred_index = tf.argmax(
-                predictions[0]
+                predictions[0],
             )
 
             loss = predictions[
@@ -93,7 +102,9 @@ class GradCAM:
         )
 
         heatmap /= (
-            tf.reduce_max(heatmap)
+            tf.reduce_max(
+                heatmap,
+            )
             + 1e-8
         )
 

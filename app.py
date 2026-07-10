@@ -10,7 +10,10 @@ from src.classification.predictor import Predictor
 from src.classification.gradcam import GradCAM
 
 
-MODEL_PATH = "models/resnet50_best.keras"
+from src.config import (
+    MODEL_PATH,
+    IMAGE_SIZE,
+)
 
 CLASS_NAMES = [
     "glioma",
@@ -96,12 +99,12 @@ if uploaded_file is not None:
 
     original = cv2.resize(
         original,
-        (224, 224),
+        IMAGE_SIZE,
     )
 
     heatmap = cv2.resize(
         heatmap,
-        (224, 224),
+        IMAGE_SIZE,
     )
 
     heatmap = cv2.GaussianBlur(
