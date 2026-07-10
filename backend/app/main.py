@@ -10,14 +10,28 @@ from app.schemas import PredictionResponse
 
 
 app = FastAPI(
-    title="Brain Tumour AI API",
+    title="Brain Tumour MRI Classification API",
+    description="""
+Production-ready REST API for Brain Tumour Classification using
+ResNet50 Transfer Learning.
+
+Features:
+- MRI Classification
+- Confidence Scores
+- Class Probabilities
+- Inference Time
+""",
     version="1.0.0",
 )
 
 predictor = Predictor()
 
 
-@app.get("/")
+@app.get(
+    "/",
+    summary="API Information",
+    tags=["System"],
+)
 def root():
 
     return {
@@ -25,7 +39,11 @@ def root():
     }
 
 
-@app.get("/health")
+@app.get(
+    "/health",
+    summary="Health Check",
+    tags=["System"],
+)
 def health():
 
     return {
@@ -37,19 +55,36 @@ def health():
 @app.post(
     "/predict",
     response_model=PredictionResponse,
+    summary="Predict Brain Tumour Class",
+    description="Upload an MRI image and receive the predicted tumour class, confidence score, probability distribution, and inference time.",
+    tags=["Prediction"],
 )
 async def predict(
     file: UploadFile = File(...),
 ):
 
-    if not file.content_type.startswith("image/"):
+    ALLOWED_TYPES = {
+        "image/jpeg",
+        "image/png",
+    }
+
+    if file.content_type not in ALLOWED_TYPES:
 
         raise HTTPException(
             status_code=400,
-            detail="Please upload an image.",
+            detail="Only JPG and PNG images are supported.",
         )
 
     image_bytes = await file.read()
+
+    MAX_FILE_SIZE = 10 * 1024 * 1024
+
+    if len(image_bytes) > MAX_FILE_SIZE:
+
+        raise HTTPException(
+            status_code=413,
+            detail="Image size exceeds 10 MB.",
+        )
 
     (
         prediction,
