@@ -51,11 +51,18 @@ async def predict(
 
     image_bytes = await file.read()
 
-    prediction, confidence = predictor.predict(
+    (
+        prediction,
+        confidence,
+        probabilities,
+        processing_time_ms,
+    ) = predictor.predict(
         image_bytes,
     )
 
     return PredictionResponse(
         prediction=prediction,
         confidence=confidence,
+        probabilities=probabilities,
+        processing_time_ms=processing_time_ms,
     )

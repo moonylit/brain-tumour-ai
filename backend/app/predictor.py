@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import tensorflow as tf
 
@@ -53,10 +55,16 @@ class Predictor:
             image_bytes,
         )
 
+        start_time = time.perf_counter()
+
         predictions = self.model.predict(
             image,
             verbose=0,
         )[0]
+
+        processing_time_ms = (
+            time.perf_counter() - start_time
+        ) * 1000
 
         index = np.argmax(
             predictions,
@@ -70,4 +78,23 @@ class Predictor:
             predictions[index]
         )
 
-        return prediction, confidence
+        probabilities = {}
+
+        for class_name, probability in zip(
+            CLASS_NAMES,
+            predictions,
+        ):
+
+            probabilities[class_name] = float(
+                probability,
+            )
+
+        return (
+            prediction,
+            confidence,
+            probabilities,
+            round(
+                processing_time_ms,
+                2,
+            ),
+        )
