@@ -103,6 +103,7 @@ async def predict(
         confidence,
         probabilities,
         processing_time_ms,
+        heatmap_filename,
     ) = predictor.predict(
         image_bytes,
     )
@@ -112,4 +113,5 @@ async def predict(
         confidence=confidence,
         probabilities=probabilities,
         processing_time_ms=processing_time_ms,
+        heatmap_filename=heatmap_filename,
     )

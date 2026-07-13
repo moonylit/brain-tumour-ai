@@ -12,3 +12,5 @@ class PredictionResponse(BaseModel):
     probabilities: Dict[str, float]
 
     processing_time_ms: float
+
+    heatmap_filename: str
