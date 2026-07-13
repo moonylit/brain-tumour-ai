@@ -129,15 +129,39 @@ class GradCAM:
     def save_heatmap(
         self,
         heatmap,
+        image_bytes,
     ):
+
+        original = tf.image.decode_image(
+            image_bytes,
+            channels=3,
+        ).numpy()
+
+        original = cv2.resize(
+            original,
+            IMAGE_SIZE,
+        )
 
         heatmap = np.uint8(
             255 * heatmap,
         )
 
+        heatmap = cv2.resize(
+            heatmap,
+            IMAGE_SIZE,
+        )
+
         heatmap = cv2.applyColorMap(
             heatmap,
             cv2.COLORMAP_JET,
+        )
+
+        overlay = cv2.addWeighted(
+            original,
+            0.6,
+            heatmap,
+            0.4,
+            0,
         )
 
         filename = (
@@ -151,7 +175,7 @@ class GradCAM:
 
         cv2.imwrite(
             output_path,
-            heatmap,
+            overlay,
         )
 
         return filename

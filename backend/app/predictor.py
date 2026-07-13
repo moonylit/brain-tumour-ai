@@ -78,6 +78,7 @@ class Predictor:
 
         heatmap_filename = self.gradcam.save_heatmap(
             heatmap,
+            image_bytes,
         )
 
         index = np.argmax(
