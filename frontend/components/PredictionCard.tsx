@@ -3,6 +3,7 @@ type Props = {
   confidence: number;
   probabilities: Record<string, number>;
   processingTime: number;
+  heatmapFilename: string;
 };
 
 export default function PredictionCard({
@@ -10,6 +11,7 @@ export default function PredictionCard({
   confidence,
   probabilities,
   processingTime,
+  heatmapFilename,
 }: Props) {
   return (
     <div className="mt-10 rounded-2xl border border-green-700 bg-slate-900 p-8">
@@ -17,6 +19,20 @@ export default function PredictionCard({
       <h2 className="mb-6 text-3xl font-bold">
         Prediction Result
       </h2>
+
+      <div className="mb-8">
+
+        <h3 className="mb-4 text-xl font-semibold">
+          Grad-CAM Heatmap
+        </h3>
+
+        <img
+          src={`http://127.0.0.1:8000/heatmaps/${heatmapFilename}`}
+          alt="Grad-CAM Heatmap"
+          className="mx-auto max-h-96 rounded-xl border border-slate-700"
+        />
+
+      </div>
 
       <div className="space-y-3">
 
@@ -50,7 +66,9 @@ export default function PredictionCard({
               className="mb-3"
             >
               <div className="mb-1 flex justify-between">
-                <span>{label.charAt(0).toUpperCase() + label.slice(1)}</span>
+                <span>
+                  {label.charAt(0).toUpperCase() + label.slice(1)}
+                </span>
 
                 <span>
                   {(value * 100).toFixed(2)}%

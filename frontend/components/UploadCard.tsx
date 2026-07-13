@@ -109,6 +109,7 @@ export default function UploadCard() {
             confidence={result.confidence}
             probabilities={result.probabilities}
             processingTime={result.processing_time_ms}
+            heatmapFilename={result.heatmap_filename}
           />
         )}
 

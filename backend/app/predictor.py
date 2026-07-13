@@ -11,6 +11,8 @@ from app.config import (
     CLASS_NAMES,
 )
 
+from app.gradcam import GradCAM
+
 
 class Predictor:
 
@@ -18,6 +20,10 @@ class Predictor:
 
         self.model = load_model(
             MODEL_PATH,
+        )
+
+        self.gradcam = GradCAM(
+            self.model,
         )
 
     def preprocess(
@@ -66,6 +72,15 @@ class Predictor:
             time.perf_counter() - start_time
         ) * 1000
 
+        heatmap = self.gradcam.generate(
+            image_bytes,
+        )
+
+        heatmap_filename = self.gradcam.save_heatmap(
+            heatmap,
+            image_bytes,
+        )
+
         index = np.argmax(
             predictions,
         )
@@ -97,4 +112,5 @@ class Predictor:
                 processing_time_ms,
                 2,
             ),
+            heatmap_filename,
         )
