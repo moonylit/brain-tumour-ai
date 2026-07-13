@@ -6,7 +6,7 @@ from fastapi import (
 )
 
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.staticfiles import StaticFiles
 from app.predictor import Predictor
 from app.schemas import PredictionResponse
 
@@ -24,6 +24,14 @@ Features:
 - Inference Time
 """,
     version="1.0.0",
+)
+
+app.mount(
+    "/heatmaps",
+    StaticFiles(
+        directory="heatmaps",
+    ),
+    name="heatmaps",
 )
 
 app.add_middleware(
