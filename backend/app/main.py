@@ -12,7 +12,7 @@ from app.history_api import load_prediction_history
 from fastapi.responses import StreamingResponse
 from app.history_api import load_prediction_history
 from app.report import generate_report
-
+from fastapi.responses import StreamingResponse
 from app.predictor import Predictor
 from app.schemas import PredictionResponse
 from app.evaluation import (
@@ -195,11 +195,15 @@ def report():
 
     latest = history[-1]
 
+    metrics = load_metrics()
+
     pdf = generate_report(
         prediction=latest["prediction"],
         confidence=latest["confidence"],
         processing_time_ms=latest["processing_time_ms"],
         heatmap_filename=latest["heatmap_filename"],
+        filename=latest["filename"],
+        metrics=metrics,
     )
 
     return StreamingResponse(
