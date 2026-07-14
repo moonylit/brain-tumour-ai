@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from app.history import save_prediction
 from app.history_api import load_prediction_history
 from fastapi.responses import StreamingResponse
+from app.history_api import load_prediction_history
 from app.report import generate_report
 
 from app.predictor import Predictor
@@ -183,11 +184,22 @@ def history():
 )
 def report():
 
+    history = load_prediction_history()
+
+    if not history:
+
+        raise HTTPException(
+            status_code=404,
+            detail="No prediction history found.",
+        )
+
+    latest = history[-1]
+
     pdf = generate_report(
-        prediction="Demo Prediction",
-        confidence=0.98,
-        processing_time_ms=123.45,
-        heatmap_filename="9a2c7760983b43eea698be323f33735a.png",
+        prediction=latest["prediction"],
+        confidence=latest["confidence"],
+        processing_time_ms=latest["processing_time_ms"],
+        heatmap_filename=latest["heatmap_filename"],
     )
 
     return StreamingResponse(
