@@ -9,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.history import save_prediction
 from app.history_api import load_prediction_history
+from fastapi.responses import StreamingResponse
+from app.report import generate_report
 
 from app.predictor import Predictor
 from app.schemas import PredictionResponse
@@ -173,3 +175,25 @@ def evaluation_plots():
 def history():
 
     return load_prediction_history()
+
+@app.get(
+    "/report",
+    tags=["Report"],
+    summary="Download PDF Report",
+)
+def report():
+
+    pdf = generate_report(
+        prediction="Demo Prediction",
+        confidence=0.98,
+        processing_time_ms=123.45,
+    )
+
+    return StreamingResponse(
+        pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition":
+            "attachment; filename=brain_tumour_report.pdf",
+        },
+    )
