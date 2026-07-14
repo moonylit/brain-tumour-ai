@@ -187,6 +187,7 @@ def report():
         prediction="Demo Prediction",
         confidence=0.98,
         processing_time_ms=123.45,
+        heatmap_filename="9a2c7760983b43eea698be323f33735a.png",
     )
 
     return StreamingResponse(

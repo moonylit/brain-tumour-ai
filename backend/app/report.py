@@ -1,12 +1,19 @@
 from io import BytesIO
+from pathlib import Path
+
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Image,
+)
 
 
 def generate_report(
     prediction: str,
     confidence: float,
     processing_time_ms: float,
+    heatmap_filename: str,
 ):
     buffer = BytesIO()
 
@@ -46,9 +53,30 @@ def generate_report(
         )
     )
 
-    document.build(
-        elements,
+    heatmap_path = (
+        Path(__file__).resolve().parents[1]
+        / "heatmaps"
+        / heatmap_filename
     )
+
+    if heatmap_path.exists():
+
+        elements.append(
+            Paragraph(
+                "<br/><b>Grad-CAM Heatmap</b>",
+                styles["Heading2"],
+            )
+        )
+
+        elements.append(
+            Image(
+                str(heatmap_path),
+                width=300,
+                height=300,
+            )
+        )
+
+    document.build(elements)
 
     buffer.seek(0)
 
