@@ -27,3 +27,12 @@ def load_metrics():
         "recall": metrics["macro avg"]["recall"],
         "f1_score": metrics["macro avg"]["f1-score"],
     }
+
+
+def load_plot_paths():
+
+    return {
+        "confusion_matrix": "/plots/confusion_matrix.png",
+        "roc_curve": "/plots/roc_curve.png",
+        "precision_recall_curve": "/plots/precision_recall_curve.png",
+    }

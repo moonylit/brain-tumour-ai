@@ -7,9 +7,13 @@ from fastapi import (
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+
 from app.predictor import Predictor
 from app.schemas import PredictionResponse
-from app.evaluation import load_metrics
+from app.evaluation import (
+    load_metrics,
+    load_plot_paths,
+)
 
 
 app = FastAPI(
@@ -33,6 +37,14 @@ app.mount(
         directory="heatmaps",
     ),
     name="heatmaps",
+)
+
+app.mount(
+    "/plots",
+    StaticFiles(
+        directory="../outputs/plots",
+    ),
+    name="plots",
 )
 
 app.add_middleware(
@@ -133,3 +145,12 @@ async def predict(
 def evaluation():
 
     return load_metrics()
+
+
+@app.get(
+    "/evaluation/plots",
+    tags=["Evaluation"],
+)
+def evaluation_plots():
+
+    return load_plot_paths()
