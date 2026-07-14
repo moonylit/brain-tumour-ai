@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.predictor import Predictor
 from app.schemas import PredictionResponse
+from app.evaluation import load_metrics
 
 
 app = FastAPI(
@@ -123,3 +124,12 @@ async def predict(
         processing_time_ms=processing_time_ms,
         heatmap_filename=heatmap_filename,
     )
+
+
+@app.get(
+    "/evaluation",
+    tags=["Evaluation"],
+)
+def evaluation():
+
+    return load_metrics()
