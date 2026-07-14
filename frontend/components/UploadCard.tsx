@@ -5,6 +5,7 @@ import axios from "axios";
 
 import PredictionCard from "./PredictionCard";
 import EvaluationCard from "./EvaluationCard";
+import HistoryCard from "./HistoryCard";
 
 export default function UploadCard() {
   const [selectedImage, setSelectedImage] =
@@ -25,6 +26,9 @@ export default function UploadCard() {
   const [plots, setPlots] =
     useState<any>(null);
 
+  const [history, setHistory] =
+    useState<any[]>([]);
+
   function handleImageChange(
     event: React.ChangeEvent<HTMLInputElement>,
   ) {
@@ -41,6 +45,7 @@ export default function UploadCard() {
     setResult(null);
     setEvaluation(null);
     setPlots(null);
+    setHistory([]);
   }
 
   async function handleUpload() {
@@ -74,18 +79,28 @@ export default function UploadCard() {
           "http://127.0.0.1:8000/evaluation",
         );
 
+      setEvaluation(
+        metrics.data,
+      );
+
       const plotData =
         await axios.get(
           "http://127.0.0.1:8000/evaluation/plots",
         );
 
-      setEvaluation(
-        metrics.data,
-      );
-
       setPlots(
         plotData.data,
       );
+
+      const historyResponse =
+        await axios.get(
+          "http://127.0.0.1:8000/history",
+        );
+
+      setHistory(
+        historyResponse.data,
+      );
+
     } catch (error: any) {
       console.error(error);
 
@@ -106,6 +121,7 @@ export default function UploadCard() {
   return (
     <section className="mx-auto max-w-5xl px-8 py-20">
       <div className="rounded-3xl border border-slate-800 bg-slate-900 p-10">
+
         <h2 className="mb-6 text-3xl font-bold">
           Upload MRI Scan
         </h2>
@@ -118,6 +134,7 @@ export default function UploadCard() {
 
         {preview && (
           <div className="mt-8">
+
             <img
               src={preview}
               alt="MRI Preview"
@@ -133,6 +150,7 @@ export default function UploadCard() {
                 ? "Predicting..."
                 : "Predict MRI"}
             </button>
+
           </div>
         )}
 
@@ -156,6 +174,13 @@ export default function UploadCard() {
             plots={plots}
           />
         )}
+
+        {history.length > 0 && (
+          <HistoryCard
+            history={history}
+          />
+        )}
+
       </div>
     </section>
   );

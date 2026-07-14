@@ -14,5 +14,13 @@
         "confidence": 0.9993172883987427,
         "processing_time_ms": 395.05,
         "heatmap_filename": "9a2c7760983b43eea698be323f33735a.png"
+    },
+    {
+        "timestamp": "2026-07-15T00:42:15.890264",
+        "filename": "Te-aug-me_7.jpg",
+        "prediction": "meningioma",
+        "confidence": 0.9999996423721313,
+        "processing_time_ms": 4426.83,
+        "heatmap_filename": "a9cc3c8cbbab4e21aee37b61928913d7.png"
     }
 ]
