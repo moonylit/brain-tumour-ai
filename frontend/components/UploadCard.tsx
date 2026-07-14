@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import axios from "axios";
+
 import PredictionCard from "./PredictionCard";
+import EvaluationCard from "./EvaluationCard";
 
 export default function UploadCard() {
   const [selectedImage, setSelectedImage] =
@@ -17,6 +19,12 @@ export default function UploadCard() {
   const [result, setResult] =
     useState<any>(null);
 
+  const [evaluation, setEvaluation] =
+    useState<any>(null);
+
+  const [plots, setPlots] =
+    useState<any>(null);
+
   function handleImageChange(
     event: React.ChangeEvent<HTMLInputElement>,
   ) {
@@ -25,10 +33,14 @@ export default function UploadCard() {
     if (!file) return;
 
     setSelectedImage(file);
-    setPreview(URL.createObjectURL(file));
 
-    // Clear previous prediction
+    setPreview(
+      URL.createObjectURL(file),
+    );
+
     setResult(null);
+    setEvaluation(null);
+    setPlots(null);
   }
 
   async function handleUpload() {
@@ -47,18 +59,42 @@ export default function UploadCard() {
     try {
       setLoading(true);
 
-      const response = await axios.post(
-        "http://127.0.0.1:8000/predict",
-        formData,
+      const predictionResponse =
+        await axios.post(
+          "http://127.0.0.1:8000/predict",
+          formData,
+        );
+
+      setResult(
+        predictionResponse.data,
       );
 
-      setResult(response.data);
+      const metrics =
+        await axios.get(
+          "http://127.0.0.1:8000/evaluation",
+        );
 
+      const plotData =
+        await axios.get(
+          "http://127.0.0.1:8000/evaluation/plots",
+        );
+
+      setEvaluation(
+        metrics.data,
+      );
+
+      setPlots(
+        plotData.data,
+      );
     } catch (error: any) {
       console.error(error);
 
       if (error.response) {
-        alert(JSON.stringify(error.response.data));
+        alert(
+          JSON.stringify(
+            error.response.data,
+          ),
+        );
       } else {
         alert(error.message);
       }
@@ -70,7 +106,6 @@ export default function UploadCard() {
   return (
     <section className="mx-auto max-w-5xl px-8 py-20">
       <div className="rounded-3xl border border-slate-800 bg-slate-900 p-10">
-
         <h2 className="mb-6 text-3xl font-bold">
           Upload MRI Scan
         </h2>
@@ -83,7 +118,6 @@ export default function UploadCard() {
 
         {preview && (
           <div className="mt-8">
-
             <img
               src={preview}
               alt="MRI Preview"
@@ -99,7 +133,6 @@ export default function UploadCard() {
                 ? "Predicting..."
                 : "Predict MRI"}
             </button>
-
           </div>
         )}
 
@@ -108,11 +141,21 @@ export default function UploadCard() {
             prediction={result.prediction}
             confidence={result.confidence}
             probabilities={result.probabilities}
-            processingTime={result.processing_time_ms}
-            heatmapFilename={result.heatmap_filename}
+            processingTime={
+              result.processing_time_ms
+            }
+            heatmapFilename={
+              result.heatmap_filename
+            }
           />
         )}
 
+        {evaluation && plots && (
+          <EvaluationCard
+            metrics={evaluation}
+            plots={plots}
+          />
+        )}
       </div>
     </section>
   );
