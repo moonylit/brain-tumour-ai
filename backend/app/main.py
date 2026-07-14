@@ -7,6 +7,7 @@ from fastapi import (
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from app.history import save_prediction
 
 from app.predictor import Predictor
 from app.schemas import PredictionResponse
@@ -127,6 +128,14 @@ async def predict(
         heatmap_filename,
     ) = predictor.predict(
         image_bytes,
+    )
+
+    save_prediction(
+    filename=file.filename,
+    prediction=prediction,
+    confidence=confidence,
+    processing_time_ms=processing_time_ms,
+    heatmap_filename=heatmap_filename,
     )
 
     return PredictionResponse(
