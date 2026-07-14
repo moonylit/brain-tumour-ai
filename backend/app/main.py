@@ -8,6 +8,7 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.history import save_prediction
+from app.history_api import load_prediction_history
 
 from app.predictor import Predictor
 from app.schemas import PredictionResponse
@@ -163,3 +164,12 @@ def evaluation():
 def evaluation_plots():
 
     return load_plot_paths()
+
+@app.get(
+    "/history",
+    tags=["History"],
+    summary="Prediction History",
+)
+def history():
+
+    return load_prediction_history()
