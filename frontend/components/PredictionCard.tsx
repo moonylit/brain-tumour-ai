@@ -13,6 +13,13 @@ export default function PredictionCard({
   processingTime,
   heatmapFilename,
 }: Props) {
+  function downloadReport() {
+    window.open(
+      "http://127.0.0.1:8000/report",
+      "_blank",
+    );
+  }
+
   return (
     <div className="mt-10 rounded-2xl border border-green-700 bg-slate-900 p-8">
 
@@ -53,6 +60,13 @@ export default function PredictionCard({
 
       </div>
 
+      <button
+        onClick={downloadReport}
+        className="mt-8 rounded-xl bg-emerald-600 px-6 py-3 font-semibold transition hover:bg-emerald-500"
+      >
+        📄 Download PDF Report
+      </button>
+
       <div className="mt-8">
 
         <h3 className="mb-4 text-xl font-semibold">
@@ -66,6 +80,7 @@ export default function PredictionCard({
               className="mb-3"
             >
               <div className="mb-1 flex justify-between">
+
                 <span>
                   {label.charAt(0).toUpperCase() + label.slice(1)}
                 </span>
@@ -73,6 +88,7 @@ export default function PredictionCard({
                 <span>
                   {(value * 100).toFixed(2)}%
                 </span>
+
               </div>
 
               <div className="h-3 rounded-full bg-slate-700">
