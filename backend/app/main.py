@@ -9,7 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.history import save_prediction
 from app.history_api import load_prediction_history
-
+from fastapi.responses import StreamingResponse
+from app.history_api import load_prediction_history
+from app.report import generate_report
+from fastapi.responses import StreamingResponse
 from app.predictor import Predictor
 from app.schemas import PredictionResponse
 from app.evaluation import (
@@ -173,3 +176,41 @@ def evaluation_plots():
 def history():
 
     return load_prediction_history()
+
+@app.get(
+    "/report",
+    tags=["Report"],
+    summary="Download PDF Report",
+)
+def report():
+
+    history = load_prediction_history()
+
+    if not history:
+
+        raise HTTPException(
+            status_code=404,
+            detail="No prediction history found.",
+        )
+
+    latest = history[-1]
+
+    metrics = load_metrics()
+
+    pdf = generate_report(
+        prediction=latest["prediction"],
+        confidence=latest["confidence"],
+        processing_time_ms=latest["processing_time_ms"],
+        heatmap_filename=latest["heatmap_filename"],
+        filename=latest["filename"],
+        metrics=metrics,
+    )
+
+    return StreamingResponse(
+        pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition":
+            "attachment; filename=brain_tumour_report.pdf",
+        },
+    )
