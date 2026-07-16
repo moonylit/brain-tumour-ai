@@ -17,6 +17,14 @@ from app.evaluation import (
     load_metrics,
     load_plot_paths,
 )
+from app.config import (
+    API_VERSION,
+    FRONTEND_URL,
+    ALLOWED_IMAGE_TYPES,
+    MAX_FILE_SIZE,
+    HEATMAP_DIRECTORY,
+    PLOTS_DIRECTORY,
+)
 
 
 app = FastAPI(
@@ -44,13 +52,13 @@ using a ResNet50 Transfer Learning model.
 - Pituitary
 - No Tumour
 """,
-    version="1.1.0",
+    version=API_VERSION,
 )
 
 app.mount(
     "/heatmaps",
     StaticFiles(
-        directory="heatmaps",
+        directory=HEATMAP_DIRECTORY,
     ),
     name="heatmaps",
 )
@@ -58,7 +66,7 @@ app.mount(
 app.mount(
     "/plots",
     StaticFiles(
-        directory="../outputs/plots",
+        directory=PLOTS_DIRECTORY,
     ),
     name="plots",
 )
@@ -66,7 +74,7 @@ app.mount(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
+        FRONTEND_URL,
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -122,12 +130,8 @@ async def predict(
     file: UploadFile = File(...),
 ):
 
-    ALLOWED_TYPES = {
-        "image/jpeg",
-        "image/png",
-    }
 
-    if file.content_type not in ALLOWED_TYPES:
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
 
         raise HTTPException(
             status_code=400,
@@ -135,8 +139,6 @@ async def predict(
         )
 
     image_bytes = await file.read()
-
-    MAX_FILE_SIZE = 10 * 1024 * 1024
 
     if len(image_bytes) > MAX_FILE_SIZE:
 

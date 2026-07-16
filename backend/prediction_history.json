@@ -62,5 +62,29 @@
         "confidence": 0.9997816681861877,
         "processing_time_ms": 377.14,
         "heatmap_filename": "e156de7b6df94995935198467663aa73.png"
+    },
+    {
+        "timestamp": "2026-07-16T11:48:22.782499",
+        "filename": "images (1).jpeg",
+        "prediction": "notumor",
+        "confidence": 0.4470270872116089,
+        "processing_time_ms": 5548.31,
+        "heatmap_filename": "ae72f05f8cc34b558be8780d711a1004.png"
+    },
+    {
+        "timestamp": "2026-07-16T11:51:29.911907",
+        "filename": "images (1).jpeg",
+        "prediction": "notumor",
+        "confidence": 0.4470270872116089,
+        "processing_time_ms": 562.78,
+        "heatmap_filename": "5d066f95743b45bf82addb9d06450bb9.png"
+    },
+    {
+        "timestamp": "2026-07-16T11:52:56.245551",
+        "filename": "images (1).jpeg",
+        "prediction": "notumor",
+        "confidence": 0.4470270872116089,
+        "processing_time_ms": 739.73,
+        "heatmap_filename": "4ba22acb4df84a96a15465a1fd641a74.png"
     }
 ]
