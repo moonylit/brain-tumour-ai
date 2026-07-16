@@ -4,15 +4,13 @@ from fastapi import (
     File,
     HTTPException,
 )
-
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+
 from app.history import save_prediction
 from app.history_api import load_prediction_history
-from fastapi.responses import StreamingResponse
-from app.history_api import load_prediction_history
 from app.report import generate_report
-from fastapi.responses import StreamingResponse
 from app.predictor import Predictor
 from app.schemas import PredictionResponse
 from app.evaluation import (
@@ -22,18 +20,31 @@ from app.evaluation import (
 
 
 app = FastAPI(
-    title="Brain Tumour MRI Classification API",
+    title="Brain Tumour AI REST API",
     description="""
-Production-ready REST API for Brain Tumour Classification using
-ResNet50 Transfer Learning.
+## Brain Tumour MRI Classification API
 
-Features:
-- MRI Classification
-- Confidence Scores
-- Class Probabilities
-- Inference Time
+A production-ready REST API for automated brain tumour classification
+using a ResNet50 Transfer Learning model.
+
+### Features
+
+- Brain MRI classification
+- Grad-CAM explainability
+- Confidence score estimation
+- Class probability distribution
+- PDF report generation
+- Prediction history
+- Model evaluation metrics
+
+### Supported Classes
+
+- Glioma
+- Meningioma
+- Pituitary
+- No Tumour
 """,
-    version="1.0.0",
+    version="1.1.0",
 )
 
 app.mount(
@@ -93,8 +104,18 @@ def health():
 @app.post(
     "/predict",
     response_model=PredictionResponse,
-    summary="Predict Brain Tumour Class",
-    description="Upload an MRI image and receive the predicted tumour class, confidence score, probability distribution, and inference time.",
+    summary="Classify Brain MRI",
+    description="""
+Upload a brain MRI image in JPG or PNG format.
+
+The API returns:
+
+- Predicted tumour class
+- Confidence score
+- Probability distribution
+- Inference time
+- Generated Grad-CAM heatmap filename
+""",
     tags=["Prediction"],
 )
 async def predict(
@@ -135,11 +156,11 @@ async def predict(
     )
 
     save_prediction(
-    filename=file.filename,
-    prediction=prediction,
-    confidence=confidence,
-    processing_time_ms=processing_time_ms,
-    heatmap_filename=heatmap_filename,
+        filename=file.filename,
+        prediction=prediction,
+        confidence=confidence,
+        processing_time_ms=processing_time_ms,
+        heatmap_filename=heatmap_filename,
     )
 
     return PredictionResponse(
@@ -149,11 +170,22 @@ async def predict(
         processing_time_ms=processing_time_ms,
         heatmap_filename=heatmap_filename,
     )
-
+    
 
 @app.get(
     "/evaluation",
     tags=["Evaluation"],
+    summary="Model Evaluation Metrics",
+    description="""
+Retrieve the evaluation metrics of the trained brain tumour classification model.
+
+Returns:
+
+- Accuracy
+- Precision
+- Recall
+- F1 Score
+""",
 )
 def evaluation():
 
@@ -163,24 +195,58 @@ def evaluation():
 @app.get(
     "/evaluation/plots",
     tags=["Evaluation"],
+    summary="Evaluation Plots",
+    description="""
+Retrieve the available evaluation plot filenames.
+
+These plots include confusion matrix, ROC curve,
+precision-recall curve, and training history.
+""",
 )
 def evaluation_plots():
 
     return load_plot_paths()
 
+
 @app.get(
     "/history",
     tags=["History"],
     summary="Prediction History",
+    description="""
+Retrieve the complete prediction history.
+
+Each record contains:
+
+- Uploaded MRI filename
+- Predicted class
+- Confidence score
+- Processing time
+- Grad-CAM filename
+- Timestamp
+""",
 )
 def history():
 
     return load_prediction_history()
 
+
 @app.get(
     "/report",
     tags=["Report"],
     summary="Download PDF Report",
+    description="""
+Generate and download a professional PDF report for the latest prediction.
+
+The report contains:
+
+- MRI filename
+- Prediction
+- Confidence score
+- Inference time
+- Model evaluation metrics
+- Grad-CAM heatmap
+- Report metadata
+""",
 )
 def report():
 
