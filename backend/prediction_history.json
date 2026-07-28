@@ -86,5 +86,21 @@
         "confidence": 0.4470270872116089,
         "processing_time_ms": 739.73,
         "heatmap_filename": "4ba22acb4df84a96a15465a1fd641a74.png"
+    },
+    {
+        "timestamp": "2026-07-28T16:51:24.172149",
+        "filename": "Te-pi_7.jpg",
+        "prediction": "pituitary",
+        "confidence": 0.9999839067459106,
+        "processing_time_ms": 1687.13,
+        "heatmap_filename": "01e3a12002f2433eb66727197b71691c.png"
+    },
+    {
+        "timestamp": "2026-07-28T17:07:35.140808",
+        "filename": "images (1).jpeg",
+        "prediction": "notumor",
+        "confidence": 0.4470270872116089,
+        "processing_time_ms": 354.63,
+        "heatmap_filename": "e3619cc06aab4da7aad01e2f32b694a4.png"
     }
 ]

@@ -26,7 +26,6 @@ from app.config import (
     PLOTS_DIRECTORY,
 )
 
-
 app = FastAPI(
     title="Brain Tumour AI REST API",
     description="""
@@ -130,32 +129,75 @@ async def predict(
     file: UploadFile = File(...),
 ):
 
-
     if file.content_type not in ALLOWED_IMAGE_TYPES:
 
         raise HTTPException(
             status_code=400,
-            detail="Only JPG and PNG images are supported.",
+            detail={
+                "error": "unsupported_file_type",
+                "message": "Only JPG and PNG MRI images are supported.",
+                "supported_formats": [
+                    "image/jpeg",
+                    "image/png",
+                ],
+            },
         )
 
     image_bytes = await file.read()
+
+    if not file.filename:
+
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "missing_filename",
+                "message": "Uploaded file must have a valid filename.",
+            },
+        )
+
+    if len(image_bytes) == 0:
+
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "empty_file",
+                "message": "Uploaded image is empty.",
+            },
+        )
 
     if len(image_bytes) > MAX_FILE_SIZE:
 
         raise HTTPException(
             status_code=413,
-            detail="Image size exceeds 10 MB.",
+            detail={
+                "error": "file_too_large",
+                "message": "Maximum upload size is 10 MB.",
+                "max_size_mb": 10,
+            },
         )
 
-    (
-        prediction,
-        confidence,
-        probabilities,
-        processing_time_ms,
-        heatmap_filename,
-    ) = predictor.predict(
-        image_bytes,
-    )
+    try:
+
+        (
+            prediction,
+            confidence,
+            probabilities,
+            processing_time_ms,
+            heatmap_filename,
+        ) = predictor.predict(
+            image_bytes,
+        )
+
+    except Exception as error:
+
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "prediction_failed",
+                "message": "Failed to process the uploaded MRI image.",
+                "details": str(error),
+            },
+        )
 
     save_prediction(
         filename=file.filename,
@@ -172,7 +214,6 @@ async def predict(
         processing_time_ms=processing_time_ms,
         heatmap_filename=heatmap_filename,
     )
-    
 
 @app.get(
     "/evaluation",
@@ -201,8 +242,12 @@ def evaluation():
     description="""
 Retrieve the available evaluation plot filenames.
 
-These plots include confusion matrix, ROC curve,
-precision-recall curve, and training history.
+These plots include:
+
+- Confusion Matrix
+- ROC Curve
+- Precision-Recall Curve
+- Training History
 """,
 )
 def evaluation_plots():
@@ -258,7 +303,10 @@ def report():
 
         raise HTTPException(
             status_code=404,
-            detail="No prediction history found.",
+            detail={
+                "error": "history_not_found",
+                "message": "No prediction history found.",
+            },
         )
 
     latest = history[-1]
@@ -278,7 +326,8 @@ def report():
         pdf,
         media_type="application/pdf",
         headers={
-            "Content-Disposition":
-            "attachment; filename=brain_tumour_report.pdf",
+            "Content-Disposition": (
+                "attachment; filename=brain_tumour_report.pdf"
+            ),
         },
     )
