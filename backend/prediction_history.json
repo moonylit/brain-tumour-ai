@@ -102,5 +102,21 @@
         "confidence": 0.4470270872116089,
         "processing_time_ms": 354.63,
         "heatmap_filename": "e3619cc06aab4da7aad01e2f32b694a4.png"
+    },
+    {
+        "timestamp": "2026-07-28T22:37:15.929965",
+        "filename": "testing.jpeg",
+        "prediction": "pituitary",
+        "confidence": 0.9997335076332092,
+        "processing_time_ms": 2353.71,
+        "heatmap_filename": "1e392bede4d04e238bcd9363992ed8cc.png"
+    },
+    {
+        "timestamp": "2026-07-28T22:38:58.507414",
+        "filename": "testing.jpeg",
+        "prediction": "pituitary",
+        "confidence": 0.9997335076332092,
+        "processing_time_ms": 258.01,
+        "heatmap_filename": "14b17817c94c455f96c7c8aec08c3efd.png"
     }
 ]

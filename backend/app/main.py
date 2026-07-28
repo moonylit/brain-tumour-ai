@@ -17,6 +17,9 @@ from app.evaluation import (
     load_metrics,
     load_plot_paths,
 )
+
+import logging
+
 from app.config import (
     API_VERSION,
     FRONTEND_URL,
@@ -24,6 +27,7 @@ from app.config import (
     MAX_FILE_SIZE,
     HEATMAP_DIRECTORY,
     PLOTS_DIRECTORY,
+    LOG_LEVEL,
 )
 
 app = FastAPI(
@@ -82,6 +86,14 @@ app.add_middleware(
 
 predictor = Predictor()
 
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL),
+    format="%(asctime)s | %(levelname)s | %(message)s",
+)
+
+logger = logging.getLogger(__name__)
+
+logger.info("Brain Tumour AI backend started successfully.")
 
 @app.get(
     "/",
@@ -128,8 +140,17 @@ The API returns:
 async def predict(
     file: UploadFile = File(...),
 ):
+    logger.info(
+      "Prediction request received: %s",
+      file.filename,
+    )
 
     if file.content_type not in ALLOWED_IMAGE_TYPES:
+
+        logger.warning(
+           "Unsupported file type received: %s",
+           file.content_type,
+        )
 
         raise HTTPException(
             status_code=400,
@@ -147,6 +168,10 @@ async def predict(
 
     if not file.filename:
 
+        logger.warning(
+          "Uploaded file missing filename."
+        )
+
         raise HTTPException(
             status_code=400,
             detail={
@@ -157,6 +182,10 @@ async def predict(
 
     if len(image_bytes) == 0:
 
+        logger.warning(
+          "Empty upload received."
+       )
+
         raise HTTPException(
             status_code=400,
             detail={
@@ -166,6 +195,11 @@ async def predict(
         )
 
     if len(image_bytes) > MAX_FILE_SIZE:
+
+        logger.warning(
+          "Upload exceeded maximum size: %s",
+          file.filename,
+        )
 
         raise HTTPException(
             status_code=413,
@@ -190,6 +224,11 @@ async def predict(
 
     except Exception as error:
 
+        logger.exception(
+          "Prediction failed for file: %s",
+          file.filename,
+        )
+
         raise HTTPException(
             status_code=500,
             detail={
@@ -198,6 +237,14 @@ async def predict(
                 "details": str(error),
             },
         )
+
+    logger.info(
+      "Prediction successful | File=%s | Class=%s | Confidence=%.2f%% | Time=%d ms",
+      file.filename,
+      prediction,
+      confidence,
+      processing_time_ms,
+    )
 
     save_prediction(
         filename=file.filename,

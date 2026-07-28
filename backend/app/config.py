@@ -45,3 +45,5 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 HEATMAP_DIRECTORY = "heatmaps"
 
 PLOTS_DIRECTORY = "../outputs/plots"
+
+LOG_LEVEL = "INFO"
