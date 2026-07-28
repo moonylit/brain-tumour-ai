@@ -4,15 +4,13 @@ from fastapi import (
     File,
     HTTPException,
 )
-
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+
 from app.history import save_prediction
 from app.history_api import load_prediction_history
-from fastapi.responses import StreamingResponse
-from app.history_api import load_prediction_history
 from app.report import generate_report
-from fastapi.responses import StreamingResponse
 from app.predictor import Predictor
 from app.schemas import PredictionResponse
 from app.evaluation import (
@@ -20,26 +18,50 @@ from app.evaluation import (
     load_plot_paths,
 )
 
+import logging
+
+from app.config import (
+    API_VERSION,
+    FRONTEND_URL,
+    ALLOWED_IMAGE_TYPES,
+    MAX_FILE_SIZE,
+    HEATMAP_DIRECTORY,
+    PLOTS_DIRECTORY,
+    LOG_LEVEL,
+)
 
 app = FastAPI(
-    title="Brain Tumour MRI Classification API",
+    title="Brain Tumour AI REST API",
     description="""
-Production-ready REST API for Brain Tumour Classification using
-ResNet50 Transfer Learning.
+## Brain Tumour MRI Classification API
 
-Features:
-- MRI Classification
-- Confidence Scores
-- Class Probabilities
-- Inference Time
+A production-ready REST API for automated brain tumour classification
+using a ResNet50 Transfer Learning model.
+
+### Features
+
+- Brain MRI classification
+- Grad-CAM explainability
+- Confidence score estimation
+- Class probability distribution
+- PDF report generation
+- Prediction history
+- Model evaluation metrics
+
+### Supported Classes
+
+- Glioma
+- Meningioma
+- Pituitary
+- No Tumour
 """,
-    version="1.0.0",
+    version=API_VERSION,
 )
 
 app.mount(
     "/heatmaps",
     StaticFiles(
-        directory="heatmaps",
+        directory=HEATMAP_DIRECTORY,
     ),
     name="heatmaps",
 )
@@ -47,7 +69,7 @@ app.mount(
 app.mount(
     "/plots",
     StaticFiles(
-        directory="../outputs/plots",
+        directory=PLOTS_DIRECTORY,
     ),
     name="plots",
 )
@@ -55,7 +77,7 @@ app.mount(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
+        FRONTEND_URL,
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -64,6 +86,14 @@ app.add_middleware(
 
 predictor = Predictor()
 
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL),
+    format="%(asctime)s | %(levelname)s | %(message)s",
+)
+
+logger = logging.getLogger(__name__)
+
+logger.info("Brain Tumour AI backend started successfully.")
 
 @app.get(
     "/",
@@ -93,53 +123,135 @@ def health():
 @app.post(
     "/predict",
     response_model=PredictionResponse,
-    summary="Predict Brain Tumour Class",
-    description="Upload an MRI image and receive the predicted tumour class, confidence score, probability distribution, and inference time.",
+    summary="Classify Brain MRI",
+    description="""
+Upload a brain MRI image in JPG or PNG format.
+
+The API returns:
+
+- Predicted tumour class
+- Confidence score
+- Probability distribution
+- Inference time
+- Generated Grad-CAM heatmap filename
+""",
     tags=["Prediction"],
 )
 async def predict(
     file: UploadFile = File(...),
 ):
+    logger.info(
+      "Prediction request received: %s",
+      file.filename,
+    )
 
-    ALLOWED_TYPES = {
-        "image/jpeg",
-        "image/png",
-    }
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
 
-    if file.content_type not in ALLOWED_TYPES:
+        logger.warning(
+           "Unsupported file type received: %s",
+           file.content_type,
+        )
 
         raise HTTPException(
             status_code=400,
-            detail="Only JPG and PNG images are supported.",
+            detail={
+                "error": "unsupported_file_type",
+                "message": "Only JPG and PNG MRI images are supported.",
+                "supported_formats": [
+                    "image/jpeg",
+                    "image/png",
+                ],
+            },
         )
 
     image_bytes = await file.read()
 
-    MAX_FILE_SIZE = 10 * 1024 * 1024
+    if not file.filename:
+
+        logger.warning(
+          "Uploaded file missing filename."
+        )
+
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "missing_filename",
+                "message": "Uploaded file must have a valid filename.",
+            },
+        )
+
+    if len(image_bytes) == 0:
+
+        logger.warning(
+          "Empty upload received."
+       )
+
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "empty_file",
+                "message": "Uploaded image is empty.",
+            },
+        )
 
     if len(image_bytes) > MAX_FILE_SIZE:
 
-        raise HTTPException(
-            status_code=413,
-            detail="Image size exceeds 10 MB.",
+        logger.warning(
+          "Upload exceeded maximum size: %s",
+          file.filename,
         )
 
-    (
-        prediction,
-        confidence,
-        probabilities,
-        processing_time_ms,
-        heatmap_filename,
-    ) = predictor.predict(
-        image_bytes,
+        raise HTTPException(
+            status_code=413,
+            detail={
+                "error": "file_too_large",
+                "message": "Maximum upload size is 10 MB.",
+                "max_size_mb": 10,
+            },
+        )
+
+    try:
+
+        (
+            prediction,
+            confidence,
+            probabilities,
+            processing_time_ms,
+            heatmap_filename,
+        ) = predictor.predict(
+            image_bytes,
+        )
+
+    except Exception as error:
+
+        logger.exception(
+          "Prediction failed for file: %s",
+          file.filename,
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "prediction_failed",
+                "message": "Failed to process the uploaded MRI image.",
+                "details": str(error),
+            },
+        )
+
+    logger.info(
+      "Prediction successful | File=%s | Class=%s | Confidence=%.2f%% | Time=%d ms",
+      file.filename,
+      prediction,
+      confidence,
+      processing_time_ms,
     )
 
     save_prediction(
-    filename=file.filename,
-    prediction=prediction,
-    confidence=confidence,
-    processing_time_ms=processing_time_ms,
-    heatmap_filename=heatmap_filename,
+        filename=file.filename,
+        prediction=prediction,
+        confidence=confidence,
+        processing_time_ms=processing_time_ms,
+        heatmap_filename=heatmap_filename,
     )
 
     return PredictionResponse(
@@ -150,10 +262,20 @@ async def predict(
         heatmap_filename=heatmap_filename,
     )
 
-
 @app.get(
     "/evaluation",
     tags=["Evaluation"],
+    summary="Model Evaluation Metrics",
+    description="""
+Retrieve the evaluation metrics of the trained brain tumour classification model.
+
+Returns:
+
+- Accuracy
+- Precision
+- Recall
+- F1 Score
+""",
 )
 def evaluation():
 
@@ -163,24 +285,62 @@ def evaluation():
 @app.get(
     "/evaluation/plots",
     tags=["Evaluation"],
+    summary="Evaluation Plots",
+    description="""
+Retrieve the available evaluation plot filenames.
+
+These plots include:
+
+- Confusion Matrix
+- ROC Curve
+- Precision-Recall Curve
+- Training History
+""",
 )
 def evaluation_plots():
 
     return load_plot_paths()
 
+
 @app.get(
     "/history",
     tags=["History"],
     summary="Prediction History",
+    description="""
+Retrieve the complete prediction history.
+
+Each record contains:
+
+- Uploaded MRI filename
+- Predicted class
+- Confidence score
+- Processing time
+- Grad-CAM filename
+- Timestamp
+""",
 )
 def history():
 
     return load_prediction_history()
 
+
 @app.get(
     "/report",
     tags=["Report"],
     summary="Download PDF Report",
+    description="""
+Generate and download a professional PDF report for the latest prediction.
+
+The report contains:
+
+- MRI filename
+- Prediction
+- Confidence score
+- Inference time
+- Model evaluation metrics
+- Grad-CAM heatmap
+- Report metadata
+""",
 )
 def report():
 
@@ -190,7 +350,10 @@ def report():
 
         raise HTTPException(
             status_code=404,
-            detail="No prediction history found.",
+            detail={
+                "error": "history_not_found",
+                "message": "No prediction history found.",
+            },
         )
 
     latest = history[-1]
@@ -210,7 +373,8 @@ def report():
         pdf,
         media_type="application/pdf",
         headers={
-            "Content-Disposition":
-            "attachment; filename=brain_tumour_report.pdf",
+            "Content-Disposition": (
+                "attachment; filename=brain_tumour_report.pdf"
+            ),
         },
     )
