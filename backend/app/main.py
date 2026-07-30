@@ -316,20 +316,36 @@ def evaluation_plots():
     description="""
 Retrieve the prediction history.
 
-Optional query parameter:
+Optional query parameters:
 
 - **limit** → Return only the most recent N predictions.
-""",
+- **prediction** → Filter history by prediction class.
+
+Examples:
+
+- /history?limit=5
+- /history?prediction=glioma
+- /history?prediction=glioma&limit=5
+"""
 )
-def history(limit: Optional[int] = None):
+def history(
+    limit: Optional[int] = None,
+    prediction: Optional[str] = None,
+):
 
     history = load_prediction_history()
 
+    if prediction is not None:
+      history = [
+        item
+        for item in history
+        if item["prediction"].lower() == prediction.lower()
+    ]
+
     if limit is not None:
-        history = history[-limit:]
+      history = history[-limit:]
 
     return history
-
 @app.get(
     "/statistics",
     response_model=StatisticsResponse,
