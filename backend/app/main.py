@@ -12,11 +12,15 @@ from app.history import save_prediction
 from app.history_api import load_prediction_history
 from app.report import generate_report
 from app.predictor import Predictor
-from app.schemas import PredictionResponse
+from app.schemas import (
+    PredictionResponse,
+    StatisticsResponse,
+)
 from app.evaluation import (
     load_metrics,
     load_plot_paths,
 )
+from app.statistics import get_prediction_statistics
 
 import logging
 
@@ -44,6 +48,7 @@ using a ResNet50 Transfer Learning model.
 - Grad-CAM explainability
 - Confidence score estimation
 - Class probability distribution
+- Inference time
 - PDF report generation
 - Prediction history
 - Model evaluation metrics
@@ -94,6 +99,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 logger.info("Brain Tumour AI backend started successfully.")
+
 
 @app.get(
     "/",
@@ -322,6 +328,26 @@ Each record contains:
 def history():
 
     return load_prediction_history()
+
+@app.get(
+    "/statistics",
+    response_model=StatisticsResponse,
+    tags=["Statistics"],
+    summary="Prediction Statistics",
+    description="""
+Retrieve analytics calculated from the prediction history.
+
+Returns:
+
+- Total predictions
+- Average confidence
+- Average processing time
+- Prediction class distribution
+""",
+)
+def get_statistics():
+
+    return get_prediction_statistics()
 
 
 @app.get(

@@ -41,3 +41,37 @@ class PredictionResponse(BaseModel):
         description="Generated Grad-CAM heatmap filename.",
         examples=["4f9e83e9d0d741d8b89f6c5d0d1f0a2b.png"],
     )
+
+
+class StatisticsResponse(BaseModel):
+
+    total_predictions: int = Field(
+        ...,
+        description="Total number of predictions stored in history.",
+        examples=[15],
+    )
+
+    average_confidence: float = Field(
+        ...,
+        description="Average confidence score across all predictions.",
+        examples=[0.82],
+    )
+
+    average_processing_time_ms: float = Field(
+        ...,
+        description="Average processing time in milliseconds.",
+        examples=[1828.61],
+    )
+
+    class_distribution: Dict[str, int] = Field(
+        ...,
+        description="Number of predictions for each tumour class.",
+        examples=[
+            {
+                "glioma": 2,
+                "meningioma": 7,
+                "pituitary": 3,
+                "notumor": 5,
+            }
+        ],
+    )
