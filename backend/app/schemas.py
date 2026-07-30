@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 from pydantic import BaseModel, Field
 
@@ -74,4 +74,23 @@ class StatisticsResponse(BaseModel):
                 "notumor": 5,
             }
         ],
+    )
+
+    class_percentages: Dict[str, float] = Field(
+        ...,
+        description="Percentage distribution of predictions for each tumour class.",
+        examples=[
+            {
+                "glioma": 13.33,
+                "meningioma": 46.67,
+                "pituitary": 20.0,
+                "notumor": 20.0,
+            }
+        ],
+    )
+
+    most_common_prediction: Optional[str] = Field(
+        ...,
+        description="Most frequently predicted tumour class.",
+        examples=["meningioma"],
     )

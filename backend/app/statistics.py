@@ -17,6 +17,8 @@ def get_prediction_statistics():
             "average_confidence": 0.0,
             "average_processing_time_ms": 0.0,
             "class_distribution": {},
+            "class_percentages": {},
+            "most_common_prediction": None,
         }
 
     confidences = [
@@ -38,8 +40,23 @@ def get_prediction_statistics():
         Counter(predictions)
     )
 
+    total_predictions = len(history)
+
+    class_percentages = {
+        tumour_class: round(
+            (count / total_predictions) * 100,
+            2,
+        )
+        for tumour_class, count in class_distribution.items()
+    }
+
+    most_common_prediction = max(
+        class_distribution,
+        key=class_distribution.get,
+    )
+
     return {
-        "total_predictions": len(history),
+        "total_predictions": total_predictions,
         "average_confidence": round(
             mean(confidences),
             2,
@@ -49,4 +66,6 @@ def get_prediction_statistics():
             2,
         ),
         "class_distribution": class_distribution,
+        "class_percentages": class_percentages,
+        "most_common_prediction": most_common_prediction,
     }
