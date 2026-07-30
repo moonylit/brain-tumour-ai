@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from app.history import save_prediction
 from app.history_api import load_prediction_history
 from app.report import generate_report
+from typing import Optional
 from app.predictor import Predictor
 from app.schemas import (
     PredictionResponse,
@@ -313,21 +314,21 @@ def evaluation_plots():
     tags=["History"],
     summary="Prediction History",
     description="""
-Retrieve the complete prediction history.
+Retrieve the prediction history.
 
-Each record contains:
+Optional query parameter:
 
-- Uploaded MRI filename
-- Predicted class
-- Confidence score
-- Processing time
-- Grad-CAM filename
-- Timestamp
+- **limit** → Return only the most recent N predictions.
 """,
 )
-def history():
+def history(limit: Optional[int] = None):
 
-    return load_prediction_history()
+    history = load_prediction_history()
+
+    if limit is not None:
+        history = history[-limit:]
+
+    return history
 
 @app.get(
     "/statistics",
