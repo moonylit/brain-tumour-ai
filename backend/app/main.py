@@ -318,34 +318,40 @@ Retrieve the prediction history.
 
 Optional query parameters:
 
-- **limit** → Return only the most recent N predictions.
+- **limit** → Return only the first N results after filtering and sorting.
 - **prediction** → Filter history by prediction class.
+- **sort** → Sort results (`asc` or `desc`). Default is `desc`.
 
 Examples:
 
 - /history?limit=5
 - /history?prediction=glioma
-- /history?prediction=glioma&limit=5
+- /history?sort=asc
+- /history?prediction=glioma&sort=desc&limit=5
 """
 )
 def history(
     limit: Optional[int] = None,
     prediction: Optional[str] = None,
+    sort: str = "desc",
 ):
 
-    history = load_prediction_history()
+   history = load_prediction_history()
 
-    if prediction is not None:
-      history = [
-        item
-        for item in history
-        if item["prediction"].lower() == prediction.lower()
+   if prediction is not None:
+     history = [
+     item
+     for item in history
+     if item["prediction"].lower() == prediction.lower()
     ]
 
-    if limit is not None:
-      history = history[-limit:]
+   if sort.lower() == "desc":
+      history = list(reversed(history))
 
-    return history
+   if limit is not None:
+      history = history[:limit]
+
+   return history
 @app.get(
     "/statistics",
     response_model=StatisticsResponse,
