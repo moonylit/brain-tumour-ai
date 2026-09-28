@@ -1,7 +1,6 @@
 export default function Hero() {
   return (
     <section className="mx-auto flex max-w-7xl flex-col items-center justify-center px-6 py-24">
-
       <span className="rounded-full border border-blue-500/40 bg-blue-500/10 px-5 py-2 text-sm text-blue-300">
         AI Powered MRI Classification
       </span>
@@ -19,17 +18,20 @@ export default function Hero() {
       </p>
 
       <div className="mt-14 flex gap-5">
-
-        <button className="rounded-xl bg-blue-600 px-8 py-4 text-lg font-semibold transition hover:bg-blue-500">
+        <a
+          href="#upload"
+          className="rounded-xl bg-blue-600 px-8 py-4 text-lg font-semibold text-white transition hover:bg-blue-500"
+        >
           Upload MRI
-        </button>
+        </a>
 
-        <button className="rounded-xl border border-slate-700 px-8 py-4 text-lg font-semibold transition hover:bg-slate-900">
+        <a
+          href="#features"
+          className="rounded-xl border border-slate-700 px-8 py-4 text-lg font-semibold text-white transition hover:bg-slate-900"
+        >
           Learn More
-        </button>
-
+        </a>
       </div>
-
     </section>
   );
 }

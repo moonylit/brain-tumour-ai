@@ -2,6 +2,7 @@ from fastapi import (
     FastAPI,
     UploadFile,
     File,
+    Query,
     HTTPException,
 )
 from fastapi.responses import StreamingResponse
@@ -11,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from app.history import save_prediction
 from app.history_api import load_prediction_history
 from app.report import generate_report
+from typing import Optional, Literal
 from app.predictor import Predictor
 from app.schemas import (
     PredictionResponse,
@@ -147,15 +149,15 @@ async def predict(
     file: UploadFile = File(...),
 ):
     logger.info(
-      "Prediction request received: %s",
-      file.filename,
+        "Prediction request received: %s",
+        file.filename,
     )
 
     if file.content_type not in ALLOWED_IMAGE_TYPES:
 
         logger.warning(
-           "Unsupported file type received: %s",
-           file.content_type,
+            "Unsupported file type received: %s",
+            file.content_type,
         )
 
         raise HTTPException(
@@ -175,7 +177,7 @@ async def predict(
     if not file.filename:
 
         logger.warning(
-          "Uploaded file missing filename."
+            "Uploaded file missing filename."
         )
 
         raise HTTPException(
@@ -189,8 +191,8 @@ async def predict(
     if len(image_bytes) == 0:
 
         logger.warning(
-          "Empty upload received."
-       )
+            "Empty upload received."
+        )
 
         raise HTTPException(
             status_code=400,
@@ -203,8 +205,8 @@ async def predict(
     if len(image_bytes) > MAX_FILE_SIZE:
 
         logger.warning(
-          "Upload exceeded maximum size: %s",
-          file.filename,
+            "Upload exceeded maximum size: %s",
+            file.filename,
         )
 
         raise HTTPException(
@@ -231,8 +233,8 @@ async def predict(
     except Exception as error:
 
         logger.exception(
-          "Prediction failed for file: %s",
-          file.filename,
+            "Prediction failed for file: %s",
+            file.filename,
         )
 
         raise HTTPException(
@@ -245,11 +247,11 @@ async def predict(
         )
 
     logger.info(
-      "Prediction successful | File=%s | Class=%s | Confidence=%.2f%% | Time=%d ms",
-      file.filename,
-      prediction,
-      confidence,
-      processing_time_ms,
+        "Prediction successful | File=%s | Class=%s | Confidence=%.2f%% | Time=%d ms",
+        file.filename,
+        prediction,
+        confidence,
+        processing_time_ms,
     )
 
     save_prediction(
@@ -267,6 +269,7 @@ async def predict(
         processing_time_ms=processing_time_ms,
         heatmap_filename=heatmap_filename,
     )
+
 
 @app.get(
     "/evaluation",
@@ -313,21 +316,70 @@ def evaluation_plots():
     tags=["History"],
     summary="Prediction History",
     description="""
-Retrieve the complete prediction history.
+Retrieve prediction history.
 
-Each record contains:
+Optional query parameters:
 
-- Uploaded MRI filename
-- Predicted class
-- Confidence score
-- Processing time
-- Grad-CAM filename
-- Timestamp
+- **limit** → Maximum number of records (must be greater than 0)
+- **prediction** → Filter by prediction class
+- **sort** → Sort order (`asc` or `desc`)
+
+Validation:
+
+- Invalid limit returns HTTP 422
+- Invalid sort returns HTTP 422
+- Invalid prediction returns HTTP 400
 """,
 )
-def history():
+def history(
+    limit: Optional[int] = Query(
+        default=None,
+        gt=0,
+        description="Maximum number of records to return",
+    ),
+    prediction: Optional[str] = Query(
+        default=None,
+        description="Prediction class filter",
+    ),
+    sort: Literal["asc", "desc"] = Query(
+        default="desc",
+        description="Sort order",
+    ),
+):
 
-    return load_prediction_history()
+    history = load_prediction_history()
+
+    valid_predictions = {
+        "glioma",
+        "meningioma",
+        "pituitary",
+        "notumor",
+    }
+
+    if (
+        prediction is not None
+        and prediction.lower() not in valid_predictions
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid prediction class",
+        )
+
+    if prediction is not None:
+        history = [
+            item
+            for item in history
+            if item["prediction"].lower() == prediction.lower()
+        ]
+
+    if sort == "desc":
+        history = list(reversed(history))
+
+    if limit is not None:
+        history = history[:limit]
+
+    return history
+
 
 @app.get(
     "/statistics",
