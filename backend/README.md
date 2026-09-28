@@ -17,6 +17,17 @@ Interactive documentation:
 
 ---
 
+## Running Tests
+
+Automated backend API tests use `pytest` and `fastapi.testclient.TestClient`. Tests are fully deterministic and preserve prediction history.
+
+```bash
+# Run all backend tests from the backend directory
+pytest -v
+```
+
+---
+
 ## API Endpoints
 
 - `GET /`: API status message
