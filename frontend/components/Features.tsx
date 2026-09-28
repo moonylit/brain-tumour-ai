@@ -21,14 +21,12 @@ export default function Features() {
   ];
 
   return (
-    <section className="mx-auto max-w-7xl px-8 py-20">
-
+    <section id="features" className="mx-auto max-w-7xl px-8 py-20">
       <h2 className="mb-12 text-center text-4xl font-bold">
         Features
       </h2>
 
       <div className="grid gap-8 md:grid-cols-3">
-
         {features.map((feature) => (
           <div
             key={feature.title}
@@ -47,9 +45,7 @@ export default function Features() {
             </p>
           </div>
         ))}
-
       </div>
-
     </section>
   );
 }
