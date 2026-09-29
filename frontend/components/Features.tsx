@@ -3,10 +3,10 @@ export default function Features() {
     {
       title: "Fast Prediction",
       description:
-        "Get MRI classification results within seconds using a fine-tuned ResNet50 model.",
+        "Classify brain MRI scans within milliseconds using an optimized ResNet-50 deep learning model.",
       icon: (
         <svg
-          className="h-8 w-8 text-blue-400"
+          className="h-5 w-5 text-sky-400"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -22,10 +22,10 @@ export default function Features() {
     {
       title: "Explainable AI",
       description:
-        "Grad-CAM highlights the regions that influenced the model's prediction.",
+        "Grad-CAM heatmaps highlight the specific anatomical regions of the MRI that informed each prediction.",
       icon: (
         <svg
-          className="h-8 w-8 text-emerald-400"
+          className="h-5 w-5 text-emerald-400"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -43,10 +43,10 @@ export default function Features() {
     {
       title: "Confidence Analysis",
       description:
-        "View confidence scores and probability distribution for every prediction.",
+        "Full softmax probability breakdown across glioma, meningioma, pituitary, and no-tumor classifications.",
       icon: (
         <svg
-          className="h-8 w-8 text-purple-400"
+          className="h-5 w-5 text-purple-400"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -64,34 +64,31 @@ export default function Features() {
   ];
 
   return (
-    <section id="features" className="mx-auto max-w-7xl px-8 py-20">
+    <section id="features" className="mx-auto max-w-7xl px-6 sm:px-8 py-20">
       <div className="mb-12 text-center">
-        <span className="text-xs font-semibold uppercase tracking-wider text-blue-400">
-          Platform Architecture
-        </span>
-        <h2 className="mt-2 text-4xl font-bold tracking-tight text-white">
-          Features & Capabilities
+        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+          Features &amp; Capabilities
         </h2>
-        <p className="mt-3 text-sm text-slate-400 max-w-xl mx-auto">
-          Built for clinical transparency, rapid neural inference, and reproducible decision support.
+        <p className="mt-2 text-sm text-slate-400 max-w-lg mx-auto leading-relaxed">
+          Accurate MRI classification paired with transparent model interpretability.
         </p>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-3">
         {features.map((feature) => (
           <div
             key={feature.title}
-            className="rounded-2xl border border-slate-800 bg-slate-900/80 p-8 transition hover:border-slate-700 hover:bg-slate-900"
+            className="glass-card-interactive rounded-2xl p-7"
           >
-            <div className="mb-5 inline-flex p-3 rounded-xl border border-slate-800 bg-slate-950/60">
+            <div className="mb-5 inline-flex p-3 rounded-xl border border-white/[0.08] bg-white/[0.03]">
               {feature.icon}
             </div>
 
-            <h3 className="mb-3 text-xl font-bold text-white">
+            <h3 className="text-lg font-semibold text-white tracking-tight">
               {feature.title}
             </h3>
 
-            <p className="text-sm leading-relaxed text-slate-400">
+            <p className="mt-2 text-sm leading-relaxed text-slate-400">
               {feature.description}
             </p>
           </div>

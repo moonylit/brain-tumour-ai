@@ -41,83 +41,100 @@ export default function PredictionCard({
 
   const heatmapUrl = getHeatmapUrl(heatmapFilename);
   const formattedPrediction = formatTumorClass(prediction);
+  const isNoTumor = formattedPrediction.toLowerCase() === "no tumor";
 
   return (
-    <div className="mt-10 rounded-2xl border border-emerald-800/80 bg-slate-900 p-8 shadow-xl">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-5 mb-6">
+    <div className="mt-10 rounded-3xl border border-emerald-500/30 bg-slate-900/85 p-8 sm:p-10 shadow-[0_20px_50px_-20px_rgba(16,185,129,0.25)] backdrop-blur-xl">
+      {/* Readout Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.08] pb-6 mb-8 gap-4">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
-            Inference Completed
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3 py-1 text-xs font-mono text-emerald-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Inference Completed</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-2">
             Prediction Result
           </h2>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3.5 py-1 text-xs font-semibold text-emerald-300">
+        <div className="flex items-center gap-3">
+          <span
+            className={`rounded-2xl border px-4 py-2 text-sm sm:text-base font-bold tracking-wide shadow-md ${
+              isNoTumor
+                ? "border-emerald-500/40 bg-emerald-950/60 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.25)]"
+                : "border-sky-500/40 bg-sky-950/60 text-sky-300 shadow-[0_0_20px_rgba(56,189,248,0.25)]"
+            }`}
+          >
             {formattedPrediction}
           </span>
         </div>
       </div>
 
+      {/* Grad-CAM Heatmap Localization Display */}
       {heatmapFilename && (
         <div className="mb-8">
-          <h3 className="mb-4 text-lg font-semibold text-slate-200">
-            Grad-CAM Heatmap Localization
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base sm:text-lg font-semibold text-slate-200">
+              Grad-CAM Heatmap Localization
+            </h3>
+            <span className="font-mono text-xs text-slate-400">
+              Generated file: {heatmapFilename}
+            </span>
+          </div>
 
-          <div className="flex flex-col items-center">
+          <div className="relative overflow-hidden rounded-2xl border border-slate-700/80 bg-black/70 p-3 shadow-2xl flex flex-col items-center">
             <img
               src={heatmapUrl}
               alt={`Grad-CAM Heatmap for ${prediction}`}
-              className="mx-auto max-h-96 rounded-xl border border-slate-700 object-contain shadow-lg"
+              className="mx-auto max-h-96 rounded-xl object-contain"
               onError={(e) => {
-                // Fallback if image fails to load
                 (e.target as HTMLElement).style.display = "none";
               }}
             />
-            <p className="mt-2 text-xs text-slate-400 font-mono">
-              Generated file: {heatmapFilename}
-            </p>
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 rounded-xl border border-slate-800 bg-slate-950/50 p-5">
-        <div>
-          <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+      {/* Primary Metrics Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 rounded-2xl border border-white/[0.08] bg-slate-950/60 p-5 backdrop-blur-md">
+        <div className="rounded-xl bg-slate-900/60 p-4 border border-white/[0.04]">
+          <span className="text-xs font-mono font-medium uppercase tracking-wider text-slate-400">
             Predicted Class
           </span>
-          <p className="mt-1 text-xl font-bold text-emerald-400">
+          <p
+            className={`mt-1.5 text-xl font-bold ${
+              isNoTumor ? "text-emerald-400" : "text-sky-400"
+            }`}
+          >
             {formattedPrediction}
           </p>
         </div>
 
-        <div>
-          <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+        <div className="rounded-xl bg-slate-900/60 p-4 border border-white/[0.04]">
+          <span className="text-xs font-mono font-medium uppercase tracking-wider text-slate-400">
             Confidence Score
           </span>
-          <p className="mt-1 text-xl font-bold text-blue-400">
+          <p className="mt-1.5 text-xl font-bold font-mono text-sky-400">
             {(confidence * 100).toFixed(2)}%
           </p>
         </div>
 
-        <div>
-          <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+        <div className="rounded-xl bg-slate-900/60 p-4 border border-white/[0.04]">
+          <span className="text-xs font-mono font-medium uppercase tracking-wider text-slate-400">
             Inference Latency
           </span>
-          <p className="mt-1 text-xl font-bold text-slate-200">
+          <p className="mt-1.5 text-xl font-bold font-mono text-slate-200">
             {processingTime.toFixed(2)} ms
           </p>
         </div>
       </div>
 
-      <div className="mt-8">
+      {/* PDF Report Download Button */}
+      <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <button
           onClick={handleDownloadReport}
           disabled={downloading}
-          className="inline-flex items-center gap-2.5 rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-slate-700"
+          className="btn-emerald inline-flex items-center gap-2.5 rounded-xl px-6 py-3.5 text-sm font-semibold text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
         >
           {downloading ? (
             <>
@@ -127,7 +144,7 @@ export default function PredictionCard({
           ) : (
             <>
               <svg
-                className="h-4 w-4"
+                className="h-4 w-4 text-emerald-200"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -146,16 +163,21 @@ export default function PredictionCard({
           )}
         </button>
 
+        <span className="text-xs text-slate-400 font-mono">
+          Clinical telemetry logged to audit trail
+        </span>
+
         {downloadError && (
-          <div className="mt-3 rounded-lg border border-red-800 bg-red-950/60 p-3 text-sm text-red-300">
+          <div className="w-full rounded-xl border border-red-500/30 bg-red-950/60 p-3 text-sm text-red-300">
             {downloadError}
           </div>
         )}
       </div>
 
+      {/* Probability Distribution Meters */}
       {probabilities && Object.keys(probabilities).length > 0 && (
-        <div className="mt-8 border-t border-slate-800 pt-6">
-          <h3 className="mb-4 text-lg font-semibold text-slate-200">
+        <div className="mt-8 border-t border-white/[0.08] pt-6">
+          <h3 className="mb-4 text-sm font-mono font-semibold uppercase tracking-wider text-slate-400">
             Class Probabilities
           </h3>
 
@@ -164,19 +186,22 @@ export default function PredictionCard({
               const percent = (value * 100).toFixed(2);
               const formattedLabel = formatTumorClass(label);
               return (
-                <div key={label} className="rounded-xl border border-slate-800/80 bg-slate-950/40 p-3">
-                  <div className="mb-1.5 flex justify-between text-sm">
+                <div
+                  key={label}
+                  className="rounded-xl border border-white/[0.06] bg-slate-950/50 p-3.5 transition hover:border-white/[0.12]"
+                >
+                  <div className="mb-2 flex justify-between text-xs sm:text-sm">
                     <span className="font-medium text-slate-200">
                       {formattedLabel}
                     </span>
-                    <span className="font-mono font-semibold text-slate-300">
+                    <span className="font-mono font-semibold text-slate-300 tabular-nums">
                       {percent}%
                     </span>
                   </div>
 
-                  <div className="h-2.5 overflow-hidden rounded-full bg-slate-800">
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-800/80">
                     <div
-                      className="h-2.5 rounded-full bg-blue-500 transition-all duration-500"
+                      className="h-2 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 transition-all duration-500"
                       style={{
                         width: `${Math.min(Math.max(value * 100, 0), 100)}%`,
                       }}
