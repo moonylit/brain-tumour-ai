@@ -3,16 +3,11 @@
 import { useState } from "react";
 import {
   predictMRI,
-  getEvaluation,
-  getEvaluationPlots,
   PredictionResponse,
-  EvaluationMetrics,
-  EvaluationPlots,
   formatApiError,
 } from "@/lib/api";
 
 import PredictionCard from "./PredictionCard";
-import EvaluationCard from "./EvaluationCard";
 import HistoryCard from "./HistoryCard";
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
@@ -26,8 +21,6 @@ export default function UploadCard() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const [result, setResult] = useState<PredictionResponse | null>(null);
-  const [evaluation, setEvaluation] = useState<EvaluationMetrics | null>(null);
-  const [plots, setPlots] = useState<EvaluationPlots | null>(null);
 
   function validateFile(file: File): string | null {
     if (!file) {
@@ -81,23 +74,11 @@ export default function UploadCard() {
       setLoading(true);
       setErrorMessage(null);
 
-      // 1. Send MRI for real model prediction
+      // Send MRI for real model prediction
       const predictionData = await predictMRI(selectedImage);
       setResult(predictionData);
 
-      // 2. Fetch evaluation metrics & plots
-      try {
-        const [metricsData, plotData] = await Promise.all([
-          getEvaluation(),
-          getEvaluationPlots(),
-        ]);
-        setEvaluation(metricsData);
-        setPlots(plotData);
-      } catch (evalError) {
-        console.warn("Could not load evaluation data:", evalError);
-      }
-
-      // 3. Trigger history & stats refresh
+      // Trigger history & stats refresh
       setRefreshTrigger((prev) => prev + 1);
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("new-prediction"));
@@ -112,9 +93,9 @@ export default function UploadCard() {
 
   return (
     <section id="upload" className="mx-auto max-w-5xl px-8 py-12">
-      <div className="rounded-3xl border border-slate-800 bg-slate-900 p-8 sm:p-10 shadow-2xl">
+      <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-8 sm:p-10 shadow-2xl backdrop-blur-sm">
         <div className="mb-6">
-          <h2 className="text-3xl font-bold tracking-tight">Upload MRI Scan</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-white">Upload MRI Scan</h2>
           <p className="mt-2 text-sm text-slate-400">
             Select a brain MRI image (JPG or PNG, max 10MB) for neural network classification and Grad-CAM explainability analysis.
           </p>
@@ -134,10 +115,21 @@ export default function UploadCard() {
           </p>
         </div>
 
-        {/* Error Notification Banner */}
+        {/* Error Notification Banner (No emojis) */}
         {errorMessage && (
           <div className="mt-6 flex items-start gap-3 rounded-xl border border-red-800 bg-red-950/70 p-4 text-red-200">
-            <span className="text-xl">⚠️</span>
+            <svg
+              className="mt-0.5 h-5 w-5 shrink-0 text-red-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
             <div className="flex-1 text-sm">
               <strong className="block font-semibold text-red-300">
                 Action Required
@@ -146,9 +138,13 @@ export default function UploadCard() {
             </div>
             <button
               onClick={() => setErrorMessage(null)}
-              className="text-slate-400 hover:text-white"
+              aria-label="Dismiss error"
+              className="rounded-lg p-1 text-slate-400 hover:bg-red-900/40 hover:text-white transition"
             >
-              ✕
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           </div>
         )}
@@ -180,17 +176,14 @@ export default function UploadCard() {
                     <span>Analyzing Brain MRI...</span>
                   </>
                 ) : (
-                  <>
-                    <span>🧠</span>
-                    <span>Predict MRI</span>
-                  </>
+                  <span>Analyze MRI Scan</span>
                 )}
               </button>
             </div>
           </div>
         )}
 
-        {/* Prediction Results */}
+        {/* Prediction Results (Focused on scan, prediction, Grad-CAM, PDF report) */}
         {result && (
           <PredictionCard
             prediction={result.prediction}
@@ -199,11 +192,6 @@ export default function UploadCard() {
             processingTime={result.processing_time_ms}
             heatmapFilename={result.heatmap_filename}
           />
-        )}
-
-        {/* Model Evaluation Metrics & Plots */}
-        {evaluation && plots && (
-          <EvaluationCard metrics={evaluation} plots={plots} />
         )}
 
         {/* Prediction History Component */}

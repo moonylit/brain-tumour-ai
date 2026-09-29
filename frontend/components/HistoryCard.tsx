@@ -6,6 +6,7 @@ import {
   HistoryQueryParams,
   getHistory,
   getHeatmapUrl,
+  formatTumorClass,
   formatApiError,
 } from "@/lib/api";
 
@@ -19,7 +20,7 @@ const VALID_CLASSES = [
   { label: "Glioma", value: "glioma" },
   { label: "Meningioma", value: "meningioma" },
   { label: "Pituitary", value: "pituitary" },
-  { label: "No Tumour", value: "notumor" },
+  { label: "No Tumor", value: "notumor" },
 ];
 
 export default function HistoryCard({
@@ -69,13 +70,15 @@ export default function HistoryCard({
   function getBadgeColor(prediction: string) {
     switch (prediction.toLowerCase()) {
       case "glioma":
-        return "bg-amber-900/60 text-amber-300 border-amber-700";
+        return "bg-amber-950/40 text-amber-300 border-amber-800/80";
       case "meningioma":
-        return "bg-rose-900/60 text-rose-300 border-rose-700";
+        return "bg-rose-950/40 text-rose-300 border-rose-800/80";
       case "pituitary":
-        return "bg-purple-900/60 text-purple-300 border-purple-700";
+        return "bg-purple-950/40 text-purple-300 border-purple-800/80";
       case "notumor":
-        return "bg-emerald-900/60 text-emerald-300 border-emerald-700";
+      case "no tumor":
+      case "no_tumor":
+        return "bg-emerald-950/40 text-emerald-300 border-emerald-800/80";
       default:
         return "bg-slate-800 text-slate-300 border-slate-700";
     }
@@ -84,22 +87,41 @@ export default function HistoryCard({
   return (
     <div
       id="history"
-      className="mt-10 rounded-2xl border border-purple-700 bg-slate-900 p-8"
+      className="mt-10 rounded-2xl border border-slate-800 bg-slate-900/90 p-8 shadow-xl"
     >
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h2 className="text-3xl font-bold">Prediction History</h2>
+          <span className="text-xs font-semibold uppercase tracking-wider text-purple-400">
+            Audit Trail
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
+            Prediction History
+          </h2>
           <p className="mt-1 text-sm text-slate-400">
-            Past MRI classification inferences and explainability maps
+            Historical MRI classification inferences, latency logs, and explainability maps
           </p>
         </div>
 
         <button
           onClick={fetchHistoryData}
           disabled={loading}
-          className="inline-flex items-center gap-2 self-start rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-medium transition hover:bg-slate-700 disabled:opacity-50"
+          className="inline-flex items-center gap-2 self-start rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-700 hover:text-white disabled:opacity-50"
         >
-          {loading ? "Refreshing..." : "↻ Refresh"}
+          {loading ? (
+            <>
+              <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-r-transparent" />
+              <span>Refreshing...</span>
+            </>
+          ) : (
+            <>
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              <span>Refresh</span>
+            </>
+          )}
         </button>
       </div>
 
@@ -167,7 +189,7 @@ export default function HistoryCard({
           <p className="mt-1 text-sm text-red-200">{error}</p>
           <button
             onClick={fetchHistoryData}
-            className="mt-3 rounded-lg bg-red-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
+            className="mt-3 rounded-lg bg-red-800 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-red-700 transition"
           >
             Try Again
           </button>
@@ -190,7 +212,7 @@ export default function HistoryCard({
           </p>
           <p className="mt-1 text-sm">
             {selectedClass
-              ? `No records found for class "${selectedClass}". Try adjusting your filters.`
+              ? `No records found for class "${formatTumorClass(selectedClass)}". Try adjusting your filters.`
               : "Upload an MRI scan to generate your first prediction."}
           </p>
         </div>
@@ -203,6 +225,7 @@ export default function HistoryCard({
             const heatmapUrl = item.heatmap_filename
               ? getHeatmapUrl(item.heatmap_filename)
               : null;
+            const formattedPrediction = formatTumorClass(item.prediction);
 
             return (
               <div
@@ -225,12 +248,12 @@ export default function HistoryCard({
                           (e.target as HTMLElement).style.display = "none";
                         }}
                       />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition group-hover:opacity-100">
-                        <span className="text-xs text-white">🔍 View</span>
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition group-hover:opacity-100">
+                        <span className="text-[11px] font-semibold text-white">Inspect</span>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg border border-slate-700 bg-slate-900 text-xs text-slate-500">
+                    <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg border border-slate-800 bg-slate-900 text-xs text-slate-500">
                       No map
                     </div>
                   )}
@@ -245,7 +268,7 @@ export default function HistoryCard({
                           item.prediction,
                         )}`}
                       >
-                        {item.prediction}
+                        {formattedPrediction}
                       </span>
                     </div>
 
@@ -282,7 +305,7 @@ export default function HistoryCard({
           onClick={() => setSelectedHeatmap(null)}
         >
           <div
-            className="relative max-w-2xl rounded-2xl border border-slate-700 bg-slate-900 p-6"
+            className="relative max-w-2xl rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
@@ -291,22 +314,26 @@ export default function HistoryCard({
               </h3>
               <button
                 onClick={() => setSelectedHeatmap(null)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white"
+                aria-label="Close modal"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition"
               >
-                ✕
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
             <img
               src={selectedHeatmap}
               alt="Full Grad-CAM Heatmap"
-              className="max-h-[70vh] w-auto rounded-xl object-contain"
+              className="max-h-[70vh] w-auto rounded-xl object-contain mx-auto"
             />
             <div className="mt-4 flex justify-end">
               <a
                 href={selectedHeatmap}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500"
+                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition"
               >
                 Open in New Tab
               </a>

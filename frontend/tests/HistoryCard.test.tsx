@@ -139,7 +139,7 @@ describe("HistoryCard Component", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Open in New Tab")).toBeInTheDocument();
 
-    const closeBtn = screen.getByRole("button", { name: "✕" });
+    const closeBtn = screen.getByRole("button", { name: /close modal/i });
     fireEvent.click(closeBtn);
 
     expect(

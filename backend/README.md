@@ -35,7 +35,7 @@ pytest -v
 - `POST /predict`: Classify MRI scan (`file` parameter, JPG/PNG, <= 10MB)
 - `GET /history`: Prediction history with `limit` (int, > 0), `prediction` (`glioma`, `meningioma`, `pituitary`, `notumor`), and `sort` (`asc`, `desc`, default `desc`)
 - `GET /statistics`: Total count, average confidence, processing time, and class distribution
-- `GET /evaluation`: Model accuracy, precision, recall, and F1 score
+- `GET /evaluation`: Model validation metrics (accuracy, precision, recall, F1 score), 4x4 confusion matrix, class labels, and per-class ROC and Precision-Recall curve coordinates
 - `GET /evaluation/plots`: File paths to confusion matrix, ROC curve, and PR curve
 - `GET /report`: Stream latest prediction summary as PDF
 - `GET /heatmaps/{filename}`: Static Grad-CAM heatmap images
