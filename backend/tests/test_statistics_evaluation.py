@@ -61,6 +61,59 @@ def test_get_evaluation_metrics(client):
         assert 0.0 <= value <= 1.0
 
 
+def test_get_evaluation_structured_data(client):
+    """
+    Test GET /evaluation returns structured confusion matrix, class labels,
+    ROC curve coordinates, and Precision-Recall curve coordinates.
+    """
+    response = client.get("/evaluation")
+    assert response.status_code == 200
+    data = response.json()
+
+    # Verify class labels
+    assert "class_labels" in data
+    assert isinstance(data["class_labels"], list)
+    assert data["class_labels"] == ["glioma", "meningioma", "notumor", "pituitary"]
+
+    # Verify confusion matrix (4x4 of non-negative integers)
+    assert "confusion_matrix" in data
+    cm = data["confusion_matrix"]
+    assert isinstance(cm, list)
+    assert len(cm) == 4
+    for row in cm:
+        assert isinstance(row, list)
+        assert len(row) == 4
+        for val in row:
+            assert isinstance(val, int)
+            assert val >= 0
+
+    # Verify ROC curve data
+    assert "roc_curve" in data
+    roc = data["roc_curve"]
+    assert isinstance(roc, dict)
+    for label in data["class_labels"]:
+        assert label in roc
+        class_roc = roc[label]
+        assert "fpr" in class_roc and isinstance(class_roc["fpr"], list)
+        assert "tpr" in class_roc and isinstance(class_roc["tpr"], list)
+        assert "auc" in class_roc and isinstance(class_roc["auc"], (int, float))
+        assert 0.0 <= class_roc["auc"] <= 1.0
+
+    # Verify Precision-Recall curve data
+    assert "precision_recall_curve" in data
+    pr = data["precision_recall_curve"]
+    assert isinstance(pr, dict)
+    for label in data["class_labels"]:
+        assert label in pr
+        class_pr = pr[label]
+        assert "precision" in class_pr and isinstance(class_pr["precision"], list)
+        assert "recall" in class_pr and isinstance(class_pr["recall"], list)
+        assert "average_precision" in class_pr and isinstance(
+            class_pr["average_precision"], (int, float)
+        )
+        assert 0.0 <= class_pr["average_precision"] <= 1.0
+
+
 def test_get_evaluation_plots(client):
     """
     Test GET /evaluation/plots returns HTTP 200 with plot file paths,

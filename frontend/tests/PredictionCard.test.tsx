@@ -42,7 +42,7 @@ describe("PredictionCard Component", () => {
   it("renders Grad-CAM heatmap with correct image src and filename", () => {
     render(<PredictionCard {...defaultProps} />);
 
-    expect(screen.getByText("Grad-CAM Heatmap")).toBeInTheDocument();
+    expect(screen.getByText("Grad-CAM Heatmap Localization")).toBeInTheDocument();
     const img = screen.getByAltText("Grad-CAM Heatmap for glioma") as HTMLImageElement;
     expect(img).toBeInTheDocument();
     expect(img.src).toContain("gradcam_sample.png");
@@ -62,7 +62,7 @@ describe("PredictionCard Component", () => {
   it("omits heatmap section when heatmapFilename is empty", () => {
     render(<PredictionCard {...defaultProps} heatmapFilename="" />);
 
-    expect(screen.queryByText("Grad-CAM Heatmap")).not.toBeInTheDocument();
+    expect(screen.queryByText("Grad-CAM Heatmap Localization")).not.toBeInTheDocument();
   });
 
   it("renders class probabilities breakdown with percentages and bars", () => {
@@ -75,7 +75,23 @@ describe("PredictionCard Component", () => {
     expect(screen.getByText("0.20%")).toBeInTheDocument();
     expect(screen.getByText("Meningioma")).toBeInTheDocument();
     expect(screen.getByText("Pituitary")).toBeInTheDocument();
-    expect(screen.getByText("Notumor")).toBeInTheDocument();
+    expect(screen.getByText("No Tumor")).toBeInTheDocument();
+    expect(screen.queryByText("Notumor")).not.toBeInTheDocument();
+    expect(screen.queryByText("NOTUMOR")).not.toBeInTheDocument();
+  });
+
+  it("renders 'No Tumor' cleanly without bad casing when predicted class is notumor", () => {
+    const noTumorProps = {
+      ...defaultProps,
+      prediction: "notumor",
+      confidence: 0.992,
+    };
+    render(<PredictionCard {...noTumorProps} />);
+
+    expect(screen.getByText("Prediction Result")).toBeInTheDocument();
+    expect(screen.getAllByText("No Tumor").length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText("NOTUMOR")).not.toBeInTheDocument();
+    expect(screen.queryByText("Notumor")).not.toBeInTheDocument();
   });
 
   it("triggers downloadReport when clicking Download PDF Report button", async () => {

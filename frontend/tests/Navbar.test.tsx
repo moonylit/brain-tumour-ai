@@ -23,10 +23,14 @@ describe("Navbar Component", () => {
 
     render(<Navbar />);
 
-    expect(screen.getByText("🧠 BrainTumourAI")).toBeInTheDocument();
+    expect(screen.getByText("BrainTumourAI")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Upload" })).toHaveAttribute(
       "href",
       "#upload",
+    );
+    expect(screen.getByRole("link", { name: "Evaluation" })).toHaveAttribute(
+      "href",
+      "#evaluation",
     );
     expect(screen.getByRole("link", { name: "Statistics" })).toHaveAttribute(
       "href",

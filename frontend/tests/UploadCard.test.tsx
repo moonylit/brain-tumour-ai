@@ -89,7 +89,7 @@ describe("UploadCard Component", () => {
       await screen.findByText(/The selected image file is empty/i),
     ).toBeInTheDocument();
 
-    const closeBtn = screen.getByRole("button", { name: "✕" });
+    const closeBtn = screen.getByRole("button", { name: /dismiss error/i });
     fireEvent.click(closeBtn);
 
     expect(
@@ -97,7 +97,7 @@ describe("UploadCard Component", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("shows image preview and Predict button when valid image is selected", async () => {
+  it("shows image preview and Analyze button when valid image is selected", async () => {
     render(<UploadCard />);
     const input = document.getElementById("mri-file-input") as HTMLInputElement;
 
@@ -110,11 +110,11 @@ describe("UploadCard Component", () => {
     expect(await screen.findByAltText("MRI Preview")).toBeInTheDocument();
     expect(screen.getByText(/brain_mri\.jpg/i)).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Predict MRI/i }),
+      screen.getByRole("button", { name: /Analyze MRI Scan/i }),
     ).toBeInTheDocument();
   });
 
-  it("successfully triggers predictMRI and displays results and evaluation", async () => {
+  it("successfully triggers predictMRI, renders results, and does NOT auto-open evaluation visualizations", async () => {
     const user = userEvent.setup();
 
     const mockPrediction: api.PredictionResponse = {
@@ -130,27 +130,8 @@ describe("UploadCard Component", () => {
       heatmap_filename: "gradcam_meningioma.png",
     };
 
-    const mockMetrics: api.EvaluationMetrics = {
-      accuracy: 0.965,
-      precision: 0.966,
-      recall: 0.965,
-      f1_score: 0.965,
-    };
-
-    const mockPlots: api.EvaluationPlots = {
-      confusion_matrix: "/static/confusion_matrix.png",
-      roc_curve: "/static/roc_curve.png",
-      precision_recall_curve: "/static/pr_curve.png",
-    };
-
     (api.predictMRI as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
       mockPrediction,
-    );
-    (api.getEvaluation as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
-      mockMetrics,
-    );
-    (api.getEvaluationPlots as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
-      mockPlots,
     );
 
     const dispatchEventSpy = vi.spyOn(window, "dispatchEvent");
@@ -164,14 +145,12 @@ describe("UploadCard Component", () => {
     fireEvent.change(input, { target: { files: [validFile] } });
 
     const predictBtn = await screen.findByRole("button", {
-      name: /Predict MRI/i,
+      name: /Analyze MRI Scan/i,
     });
     await user.click(predictBtn);
 
     await waitFor(() => {
       expect(api.predictMRI).toHaveBeenCalledWith(validFile);
-      expect(api.getEvaluation).toHaveBeenCalled();
-      expect(api.getEvaluationPlots).toHaveBeenCalled();
     });
 
     // Check prediction card rendered
@@ -179,9 +158,9 @@ describe("UploadCard Component", () => {
     expect(screen.getAllByText("Meningioma").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("94.50%").length).toBeGreaterThanOrEqual(1);
 
-    // Check evaluation card rendered
-    expect(screen.getByText("Model Evaluation")).toBeInTheDocument();
-    expect(screen.getByText("Accuracy")).toBeInTheDocument();
+    // CRITICAL: EvaluationCard is NOT opened automatically with prediction
+    expect(screen.queryByText("Model Evaluation")).not.toBeInTheDocument();
+    expect(screen.queryByAltText("Confusion Matrix")).not.toBeInTheDocument();
 
     // Verify custom event dispatched for other components
     expect(dispatchEventSpy).toHaveBeenCalledWith(
@@ -203,7 +182,7 @@ describe("UploadCard Component", () => {
     fireEvent.change(input, { target: { files: [validFile] } });
 
     const predictBtn = await screen.findByRole("button", {
-      name: /Predict MRI/i,
+      name: /Analyze MRI Scan/i,
     });
     await user.click(predictBtn);
 

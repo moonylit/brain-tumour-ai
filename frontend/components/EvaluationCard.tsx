@@ -14,6 +14,8 @@ import {
 type Props = {
   metrics?: EvaluationMetrics;
   plots?: EvaluationPlots;
+  initialMetrics?: EvaluationMetrics;
+  initialPlots?: EvaluationPlots;
 };
 
 type EvaluationTab = "confusion_matrix" | "roc_curve" | "precision_recall";
@@ -44,18 +46,19 @@ const TAB_CONFIG: {
 ];
 
 export default function EvaluationCard({
-  metrics: initialMetrics,
-  plots: initialPlots,
+  metrics: propMetrics,
+  plots: propPlots,
+  initialMetrics,
+  initialPlots,
 }: Props) {
-  const [metrics, setMetrics] = useState<EvaluationMetrics | null>(
-    initialMetrics || null,
-  );
-  const [plots, setPlots] = useState<EvaluationPlots | null>(
-    initialPlots || null,
-  );
+  const incomingMetrics = propMetrics || initialMetrics || null;
+  const incomingPlots = propPlots || initialPlots || null;
+
+  const [metrics, setMetrics] = useState<EvaluationMetrics | null>(incomingMetrics);
+  const [plots, setPlots] = useState<EvaluationPlots | null>(incomingPlots);
   const [activeTab, setActiveTab] =
     useState<EvaluationTab>("confusion_matrix");
-  const [loading, setLoading] = useState(!initialMetrics || !initialPlots);
+  const [loading, setLoading] = useState(!incomingMetrics || !incomingPlots);
   const [error, setError] = useState<string | null>(null);
 
   const fetchEvaluationData = useCallback(async () => {
@@ -77,16 +80,16 @@ export default function EvaluationCard({
   }, []);
 
   useEffect(() => {
-    if (initialMetrics) {
-      setMetrics(initialMetrics);
+    if (incomingMetrics) {
+      setMetrics(incomingMetrics);
     }
-    if (initialPlots) {
-      setPlots(initialPlots);
+    if (incomingPlots) {
+      setPlots(incomingPlots);
     }
-    if (!initialMetrics || !initialPlots) {
+    if (!incomingMetrics || !incomingPlots) {
       fetchEvaluationData();
     }
-  }, [initialMetrics, initialPlots, fetchEvaluationData]);
+  }, [incomingMetrics, incomingPlots, fetchEvaluationData]);
 
   const activeTabConfig = TAB_CONFIG.find((tab) => tab.id === activeTab)!;
 

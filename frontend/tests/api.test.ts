@@ -13,6 +13,7 @@ import {
   getHeatmapUrl,
   getPlotUrl,
   formatApiError,
+  formatTumorClass,
   PredictionResponse,
   HistoryItem,
   StatisticsResponse,
@@ -354,6 +355,28 @@ describe("API Client (lib/api.ts)", () => {
     it("handles unknown non-error values", () => {
       expect(formatApiError(42)).toBe("An unexpected error occurred.");
       expect(formatApiError(null)).toBe("An unexpected error occurred.");
+    });
+  });
+
+  describe("formatTumorClass", () => {
+    it("formats 'notumor' and variations to 'No Tumor'", () => {
+      expect(formatTumorClass("notumor")).toBe("No Tumor");
+      expect(formatTumorClass("NOTUMOR")).toBe("No Tumor");
+      expect(formatTumorClass("no_tumor")).toBe("No Tumor");
+      expect(formatTumorClass("no tumor")).toBe("No Tumor");
+      expect(formatTumorClass("No Tumor")).toBe("No Tumor");
+    });
+
+    it("capitalizes single-word tumor classes properly", () => {
+      expect(formatTumorClass("glioma")).toBe("Glioma");
+      expect(formatTumorClass("meningioma")).toBe("Meningioma");
+      expect(formatTumorClass("pituitary")).toBe("Pituitary");
+    });
+
+    it("handles empty or falsy inputs gracefully", () => {
+      expect(formatTumorClass("")).toBe("");
+      expect(formatTumorClass(undefined as unknown as string)).toBe("");
+      expect(formatTumorClass(null as unknown as string)).toBe("");
     });
   });
 });

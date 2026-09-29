@@ -9,6 +9,24 @@ vi.mock("../lib/api", async (importOriginal) => {
     ...actual,
     checkBackendHealth: vi.fn().mockResolvedValue({ status: "healthy", model_loaded: true }),
     getHistory: vi.fn().mockResolvedValue([]),
+    getEvaluation: vi.fn().mockResolvedValue({
+      accuracy: 0.9809,
+      precision: 0.9816,
+      recall: 0.9816,
+      f1_score: 0.9815,
+      confusion_matrix: [
+        [526, 18, 2, 0],
+        [7, 534, 0, 7],
+        [0, 0, 454, 1],
+        [1, 4, 0, 536],
+      ],
+      class_labels: ["glioma", "meningioma", "notumor", "pituitary"],
+    }),
+    getEvaluationPlots: vi.fn().mockResolvedValue({
+      confusion_matrix: "/plots/confusion_matrix.png",
+      roc_curve: "/plots/roc_curve.png",
+      precision_recall_curve: "/plots/precision_recall_curve.png",
+    }),
     getStatistics: vi.fn().mockResolvedValue({
       total_predictions: 10,
       average_confidence: 0.95,
@@ -29,7 +47,7 @@ describe("Page Integration (app/page.tsx)", () => {
     render(<Home />);
 
     // Navbar
-    expect(screen.getByText("🧠 BrainTumourAI")).toBeInTheDocument();
+    expect(screen.getByText("BrainTumourAI")).toBeInTheDocument();
 
     // Hero section
     expect(
@@ -42,9 +60,15 @@ describe("Page Integration (app/page.tsx)", () => {
     // Upload section
     expect(screen.getByText("Upload MRI Scan")).toBeInTheDocument();
 
+    // Dedicated Evaluation section
+    expect(screen.getByText("Model Evaluation")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Confusion Matrix" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "ROC Curve" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Precision-Recall" })).toBeInTheDocument();
+
     // Features section
     expect(
-      screen.getByRole("heading", { level: 2, name: "Features" }),
+      screen.getByRole("heading", { level: 2, name: /Features/i }),
     ).toBeInTheDocument();
     expect(screen.getByText("Fast Prediction")).toBeInTheDocument();
     expect(screen.getByText("Explainable AI")).toBeInTheDocument();
