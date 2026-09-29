@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import EvaluationCard from "../components/EvaluationCard";
 import * as api from "../lib/api";
@@ -67,7 +67,7 @@ describe("EvaluationCard Component", () => {
     expect(screen.getByText("98.15%")).toBeInTheDocument();
   });
 
-  it("renders the three segmented tabs and defaults to Confusion Matrix", () => {
+  it("renders the three buttons and does not display any chart explicitly until clicked", () => {
     render(<EvaluationCard initialMetrics={mockMetrics} initialPlots={mockPlots} />);
 
     const tabCM = screen.getByRole("tab", { name: "Confusion Matrix" });
@@ -78,37 +78,41 @@ describe("EvaluationCard Component", () => {
     expect(tabROC).toBeInTheDocument();
     expect(tabPR).toBeInTheDocument();
 
-    // Default active tab is Confusion Matrix
-    expect(tabCM).toHaveAttribute("aria-selected", "true");
+    // In initial state, none of the tabs are selected
+    expect(tabCM).toHaveAttribute("aria-selected", "false");
     expect(tabROC).toHaveAttribute("aria-selected", "false");
     expect(tabPR).toHaveAttribute("aria-selected", "false");
 
-    // Confusion Matrix explanation is displayed
-    expect(
-      screen.getByText(
-        "Shows how often the model correctly identifies each tumor class and where classifications are confused.",
-      ),
-    ).toBeInTheDocument();
-
-    // Only Confusion Matrix image is rendered, others are NOT rendered
-    expect(screen.getByAltText("Confusion Matrix")).toBeInTheDocument();
+    // No chart images are displayed explicitly
+    expect(screen.queryByAltText("Confusion Matrix")).not.toBeInTheDocument();
     expect(screen.queryByAltText("ROC Curve")).not.toBeInTheDocument();
     expect(screen.queryByAltText("Precision Recall Curve")).not.toBeInTheDocument();
+
+    // Helper text is displayed
+    expect(
+      screen.getByText("Click any button above to display the Confusion Matrix, ROC Curve, or Precision-Recall Curve."),
+    ).toBeInTheDocument();
   });
 
-  it("formats 'notumor' cleanly as 'No Tumor' in confusion matrix summary table", () => {
+  it("displays Confusion Matrix and formats 'notumor' as 'No Tumor' when button is clicked", async () => {
+    const user = userEvent.setup();
     render(<EvaluationCard initialMetrics={mockMetrics} initialPlots={mockPlots} />);
+
+    const tabCM = screen.getByRole("tab", { name: "Confusion Matrix" });
+    await user.click(tabCM);
+
+    expect(tabCM).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByAltText("Confusion Matrix")).toBeInTheDocument();
 
     expect(screen.getByText("Class Confusion Matrix Summary")).toBeInTheDocument();
 
     // The table headers and rows should display "No Tumor" rather than "notumor"
     const noTumorElements = screen.getAllByText("No Tumor");
-    expect(noTumorElements.length).toBeGreaterThanOrEqual(2); // once in thead, once in tbody
-
+    expect(noTumorElements.length).toBeGreaterThanOrEqual(2);
     expect(screen.queryByText("notumor")).not.toBeInTheDocument();
   });
 
-  it("switches to ONLY ROC Curve view when ROC Curve tab is clicked", async () => {
+  it("switches to ONLY ROC Curve view when ROC Curve button is clicked", async () => {
     const user = userEvent.setup();
     render(<EvaluationCard initialMetrics={mockMetrics} initialPlots={mockPlots} />);
 
@@ -136,7 +140,7 @@ describe("EvaluationCard Component", () => {
     expect(screen.getByText("AUC 0.999")).toBeInTheDocument();
   });
 
-  it("switches to ONLY Precision-Recall view when Precision-Recall tab is clicked", async () => {
+  it("switches to ONLY Precision-Recall view when Precision-Recall button is clicked", async () => {
     const user = userEvent.setup();
     render(<EvaluationCard initialMetrics={mockMetrics} initialPlots={mockPlots} />);
 
@@ -162,7 +166,28 @@ describe("EvaluationCard Component", () => {
     expect(screen.getByText("AP 0.999")).toBeInTheDocument();
   });
 
+  it("toggles off and hides the visualization when clicking the active button again", async () => {
+    const user = userEvent.setup();
+    render(<EvaluationCard initialMetrics={mockMetrics} initialPlots={mockPlots} />);
+
+    const tabCM = screen.getByRole("tab", { name: "Confusion Matrix" });
+    
+    // Open
+    await user.click(tabCM);
+    expect(screen.getByAltText("Confusion Matrix")).toBeInTheDocument();
+    expect(tabCM).toHaveAttribute("aria-selected", "true");
+
+    // Close
+    await user.click(tabCM);
+    expect(screen.queryByAltText("Confusion Matrix")).not.toBeInTheDocument();
+    expect(tabCM).toHaveAttribute("aria-selected", "false");
+    expect(
+      screen.getByText("Click any button above to display the Confusion Matrix, ROC Curve, or Precision-Recall Curve."),
+    ).toBeInTheDocument();
+  });
+
   it("fetches evaluation data and plots automatically when props are omitted", async () => {
+    const user = userEvent.setup();
     (api.getEvaluation as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
       mockMetrics,
     );
@@ -178,6 +203,10 @@ describe("EvaluationCard Component", () => {
     });
 
     expect(await screen.findByText("98.09%")).toBeInTheDocument();
+
+    // Now click Confusion Matrix to see plot
+    const tabCM = screen.getByRole("tab", { name: "Confusion Matrix" });
+    await user.click(tabCM);
     expect(screen.getByAltText("Confusion Matrix")).toBeInTheDocument();
   });
 

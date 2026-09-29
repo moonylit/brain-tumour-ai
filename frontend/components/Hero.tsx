@@ -1,30 +1,25 @@
 export default function Hero() {
   return (
     <section className="mx-auto flex max-w-7xl flex-col items-center justify-center px-6 pt-20 pb-16 text-center">
-      {/* Precision Badge */}
-      <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-500/[0.08] px-4 py-1.5 text-xs font-medium tracking-wide text-sky-300 shadow-[0_0_20px_rgba(56,189,248,0.15)]">
-        <span className="h-1.5 w-1.5 rounded-full bg-sky-400 animate-pulse" />
+      {/* Subtle Badge */}
+      <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-1 text-xs font-medium text-slate-300">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
         <span>AI Powered MRI Classification</span>
-        <span className="text-sky-500/60">•</span>
-        <span className="font-mono text-[11px] text-slate-400">ResNet-50 v2</span>
+        <span className="text-slate-600">•</span>
+        <span className="font-mono text-[11px] text-slate-400">ResNet-50</span>
       </div>
 
-      {/* Main Clinical Heading */}
-      <h1 className="mt-8 max-w-4xl text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white leading-[1.08]">
-        Clinical Neuroimaging &amp;{" "}
-        <span className="block mt-1 text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-blue-300 to-indigo-300">
-          Brain Tumour Diagnostics
-        </span>
+      {/* Main Heading */}
+      <h1 className="mt-6 max-w-3xl text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white leading-tight">
+        Brain Tumour Detector
       </h1>
 
-      {/* Medical Subtitle */}
-      <p className="mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-slate-400">
-        High-resolution automated MRI triage and explainable Grad-CAM spatial
-        attention localization across glioma, meningioma, pituitary, and
-        non-tumour cranial scans.
+      {/* Subtitle */}
+      <p className="mt-4 max-w-xl text-base sm:text-lg text-slate-400 leading-relaxed">
+        Upload an MRI scan to detect brain tumours and view Grad-CAM explainability heatmaps.
       </p>
 
-      {/* Polished Action Buttons */}
+      {/* Action Buttons */}
       <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
         <a
           href="#upload"
@@ -67,22 +62,6 @@ export default function Hero() {
           </svg>
           <span>Model Benchmarks</span>
         </a>
-      </div>
-
-      {/* Telemetry Micro-Badges */}
-      <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs font-mono text-slate-400 border-t border-white/[0.06] pt-8">
-        <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          <span>98.09% Validation Accuracy</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
-          <span>&lt;150ms Neural Latency</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-purple-400" />
-          <span>Grad-CAM Spatial Heatmap</span>
-        </div>
       </div>
     </section>
   );

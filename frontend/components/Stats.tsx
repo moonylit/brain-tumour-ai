@@ -79,15 +79,11 @@ export default function Stats({ refreshTrigger }: Props) {
   return (
     <section id="stats" className="mx-auto max-w-7xl px-6 sm:px-8 py-20">
       <div className="mb-14 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-500/10 px-3.5 py-1 text-xs font-mono text-sky-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
-          <span>Clinical Telemetry</span>
-        </div>
-        <h2 className="mt-2 text-3xl sm:text-4xl font-bold tracking-tight text-white">
+        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
           Prediction Statistics &amp; Analytics
         </h2>
-        <p className="mt-3 text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">
-          Aggregated analytics computed in real-time from inference history
+        <p className="mt-2 text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">
+          Aggregated analytics computed in real-time from inference history.
         </p>
       </div>
 

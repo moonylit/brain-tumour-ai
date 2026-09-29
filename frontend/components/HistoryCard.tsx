@@ -91,14 +91,11 @@ export default function HistoryCard({
     >
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center border-b border-white/[0.06] pb-5">
         <div>
-          <span className="text-xs font-mono font-semibold uppercase tracking-widest text-indigo-400">
-            Audit Trail &amp; Telemetry
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
             Prediction History
           </h2>
           <p className="mt-1 text-sm text-slate-400">
-            Historical MRI classification inferences, latency logs, and explainability maps
+            Log of past MRI scans and model predictions.
           </p>
         </div>
 

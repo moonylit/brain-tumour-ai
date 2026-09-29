@@ -95,15 +95,11 @@ export default function UploadCard() {
     <section id="upload" className="mx-auto max-w-5xl px-6 sm:px-8 py-12">
       <div className="glass-card rounded-3xl p-8 sm:p-10 border border-white/[0.08]">
         <div className="mb-8">
-          <span className="text-xs font-mono font-semibold uppercase tracking-widest text-sky-400">
-            Diagnostic Ingest Console
-          </span>
-          <h2 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
             Upload MRI Scan
           </h2>
           <p className="mt-2 text-sm text-slate-400 leading-relaxed">
-            Select a brain MRI image (JPG or PNG, max 10MB) for neural network
-            classification and Grad-CAM explainability analysis.
+            Select a brain MRI image (JPG or PNG, max 10MB) for tumour classification and Grad-CAM explainability analysis.
           </p>
         </div>
 
@@ -196,10 +192,10 @@ export default function UploadCard() {
           <div className="mt-8 rounded-2xl border border-white/[0.08] bg-slate-950/60 p-6 backdrop-blur-md">
             <div className="flex items-center justify-between mb-4 border-b border-white/[0.06] pb-3">
               <span className="text-xs font-mono font-medium uppercase tracking-wider text-slate-400">
-                Active Scan Buffer
+                Selected Scan
               </span>
-              <span className="font-mono text-xs text-sky-400 bg-sky-950/40 border border-sky-500/20 px-2.5 py-0.5 rounded-full">
-                Ready for Inference
+              <span className="font-mono text-xs text-emerald-400 bg-emerald-950/40 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+                Ready
               </span>
             </div>
 

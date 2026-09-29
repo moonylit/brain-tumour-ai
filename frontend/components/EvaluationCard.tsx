@@ -11,16 +11,17 @@ import {
   formatApiError,
 } from "@/lib/api";
 
+export type EvaluationTab = "confusion_matrix" | "roc_curve" | "precision_recall";
+
 type Props = {
   metrics?: EvaluationMetrics;
   plots?: EvaluationPlots;
   initialMetrics?: EvaluationMetrics;
   initialPlots?: EvaluationPlots;
+  defaultTab?: EvaluationTab | null;
 };
 
-type EvaluationTab = "confusion_matrix" | "roc_curve" | "precision_recall";
-
-const TAB_CONFIG: {
+export const TAB_CONFIG: {
   id: EvaluationTab;
   label: string;
   explanation: string;
@@ -50,14 +51,14 @@ export default function EvaluationCard({
   plots: propPlots,
   initialMetrics,
   initialPlots,
+  defaultTab = null,
 }: Props) {
   const incomingMetrics = propMetrics || initialMetrics || null;
   const incomingPlots = propPlots || initialPlots || null;
 
   const [metrics, setMetrics] = useState<EvaluationMetrics | null>(incomingMetrics);
   const [plots, setPlots] = useState<EvaluationPlots | null>(incomingPlots);
-  const [activeTab, setActiveTab] =
-    useState<EvaluationTab>("confusion_matrix");
+  const [activeTab, setActiveTab] = useState<EvaluationTab | null>(defaultTab);
   const [loading, setLoading] = useState(!incomingMetrics || !incomingPlots);
   const [error, setError] = useState<string | null>(null);
 
@@ -91,7 +92,11 @@ export default function EvaluationCard({
     }
   }, [incomingMetrics, incomingPlots, fetchEvaluationData]);
 
-  const activeTabConfig = TAB_CONFIG.find((tab) => tab.id === activeTab)!;
+  const activeTabConfig = TAB_CONFIG.find((tab) => tab.id === activeTab);
+
+  function handleTabClick(tabId: EvaluationTab) {
+    setActiveTab((prev) => (prev === tabId ? null : tabId));
+  }
 
   return (
     <section id="evaluation" className="mx-auto max-w-7xl px-6 sm:px-8 py-16">
@@ -106,8 +111,7 @@ export default function EvaluationCard({
               Model Evaluation
             </h2>
             <p className="mt-2 text-sm text-slate-400 max-w-2xl leading-relaxed">
-              Independent benchmark metrics and statistical diagnostics computed
-              across validation MRI datasets using the trained ResNet50 neural network.
+              Performance metrics and diagnostic curves evaluated on the validation dataset using the trained ResNet-50 network.
             </p>
           </div>
 
@@ -135,7 +139,7 @@ export default function EvaluationCard({
                 </div>
               ))}
             </div>
-            <div className="h-96 rounded-2xl border border-white/[0.06] bg-slate-950/40" />
+            <div className="h-40 rounded-2xl border border-white/[0.06] bg-slate-950/40" />
           </div>
         )}
 
@@ -156,7 +160,7 @@ export default function EvaluationCard({
               <span className="text-xs font-mono font-medium uppercase tracking-wider text-slate-400">
                 Accuracy
               </span>
-              <p className="mt-2 text-3xl sm:text-4xl font-bold font-mono tracking-tight text-emerald-400 drop-shadow-[0_0_12px_rgba(52,211,153,0.25)]">
+              <p className="mt-2 text-3xl sm:text-4xl font-bold font-mono tracking-tight text-emerald-400">
                 {(metrics.accuracy * 100).toFixed(2)}%
               </p>
             </div>
@@ -165,7 +169,7 @@ export default function EvaluationCard({
               <span className="text-xs font-mono font-medium uppercase tracking-wider text-slate-400">
                 Precision
               </span>
-              <p className="mt-2 text-3xl sm:text-4xl font-bold font-mono tracking-tight text-sky-400 drop-shadow-[0_0_12px_rgba(56,189,248,0.25)]">
+              <p className="mt-2 text-3xl sm:text-4xl font-bold font-mono tracking-tight text-sky-400">
                 {(metrics.precision * 100).toFixed(2)}%
               </p>
             </div>
@@ -174,7 +178,7 @@ export default function EvaluationCard({
               <span className="text-xs font-mono font-medium uppercase tracking-wider text-slate-400">
                 Recall
               </span>
-              <p className="mt-2 text-3xl sm:text-4xl font-bold font-mono tracking-tight text-blue-400 drop-shadow-[0_0_12px_rgba(96,165,250,0.25)]">
+              <p className="mt-2 text-3xl sm:text-4xl font-bold font-mono tracking-tight text-blue-400">
                 {(metrics.recall * 100).toFixed(2)}%
               </p>
             </div>
@@ -183,19 +187,35 @@ export default function EvaluationCard({
               <span className="text-xs font-mono font-medium uppercase tracking-wider text-slate-400">
                 F1 Score
               </span>
-              <p className="mt-2 text-3xl sm:text-4xl font-bold font-mono tracking-tight text-purple-400 drop-shadow-[0_0_12px_rgba(192,132,252,0.25)]">
+              <p className="mt-2 text-3xl sm:text-4xl font-bold font-mono tracking-tight text-purple-400">
                 {(metrics.f1_score * 100).toFixed(2)}%
               </p>
             </div>
           </div>
         )}
 
-        {/* Segmented Control Tabs */}
-        <div className="mb-8 border-b border-white/[0.08] pb-6">
+        {/* Buttons for Curves & Matrix (Click to toggle display) */}
+        <div className="mb-4 border-b border-white/[0.08] pb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+            <span className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-400">
+              Evaluation Visualizations
+            </span>
+            {activeTab && (
+              <button
+                type="button"
+                onClick={() => setActiveTab(null)}
+                className="text-xs text-slate-400 hover:text-white transition flex items-center gap-1 self-start sm:self-auto cursor-pointer"
+              >
+                <span>Hide Visualization</span>
+                <span>✕</span>
+              </button>
+            )}
+          </div>
+
           <div
             role="tablist"
             aria-label="Model Evaluation Visualizations"
-            className="inline-flex flex-wrap rounded-2xl border border-white/[0.08] bg-[#090d16] p-1.5 shadow-inner gap-1"
+            className="flex flex-wrap items-center gap-2.5"
           >
             {TAB_CONFIG.map((tab) => {
               const isSelected = activeTab === tab.id;
@@ -206,31 +226,53 @@ export default function EvaluationCard({
                   id={`tab-${tab.id}`}
                   aria-selected={isSelected}
                   aria-controls={`panel-${tab.id}`}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`rounded-xl px-5 py-2.5 text-xs sm:text-sm font-semibold transition-all duration-200 ${
+                  onClick={() => handleTabClick(tab.id)}
+                  className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer ${
                     isSelected
-                      ? "bg-slate-800 text-white border border-white/[0.12] shadow-[0_2px_10px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.18)]"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
+                      ? "bg-blue-600 text-white border border-blue-400/50 shadow-[0_0_20px_rgba(37,99,235,0.35)]"
+                      : "bg-white/[0.04] text-slate-300 border border-white/[0.08] hover:bg-white/[0.08] hover:text-white hover:border-white/[0.15]"
                   }`}
                 >
-                  {tab.label}
+                  <span
+                    className={`h-2 w-2 rounded-full ${
+                      isSelected ? "bg-white" : "bg-slate-500"
+                    }`}
+                  />
+                  <span>{tab.label}</span>
+                  {isSelected && (
+                    <span className="text-xs text-blue-200 font-mono ml-0.5">✓</span>
+                  )}
                 </button>
               );
             })}
           </div>
 
-          {/* Visualization One-Line Explanation */}
-          <div className="mt-4 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-slate-950/60 px-4 py-3 text-sm text-slate-300 backdrop-blur-md">
-            <span className="h-2 w-2 rounded-full bg-sky-400 shrink-0" />
-            <span className="font-semibold text-sky-400 font-mono text-xs uppercase tracking-wider">
-              {activeTabConfig.label}:
-            </span>
-            <span className="text-slate-300">{activeTabConfig.explanation}</span>
-          </div>
+          {/* Visualization One-Line Explanation (Shown ONLY when a tab is active) */}
+          {activeTabConfig && (
+            <div className="mt-4 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-slate-950/60 px-4 py-3 text-sm text-slate-300 backdrop-blur-md">
+              <span className="h-2 w-2 rounded-full bg-sky-400 shrink-0" />
+              <span className="font-semibold text-sky-400 font-mono text-xs uppercase tracking-wider">
+                {activeTabConfig.label}:
+              </span>
+              <span className="text-slate-300">{activeTabConfig.explanation}</span>
+            </div>
+          )}
         </div>
 
-        {/* Selected Visualization Panel (Displays ONLY the active tab) */}
-        {plots && (
+        {/* If no tab selected, show clean prompt */}
+        {!activeTab && (
+          <div className="rounded-2xl border border-dashed border-white/[0.08] bg-white/[0.02] p-8 text-center">
+            <p className="text-sm font-medium text-slate-300">
+              Diagnostic Visualizations
+            </p>
+            <p className="mt-1 text-xs text-slate-400">
+              Click any button above to display the Confusion Matrix, ROC Curve, or Precision-Recall Curve.
+            </p>
+          </div>
+        )}
+
+        {/* Selected Visualization Panel (Displays ONLY when a button is clicked) */}
+        {activeTab && plots && (
           <div
             role="tabpanel"
             id={`panel-${activeTab}`}
