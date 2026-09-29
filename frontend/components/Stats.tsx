@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { StatisticsResponse, getStatistics, formatApiError } from "@/lib/api";
+import {
+  StatisticsResponse,
+  getStatistics,
+  formatTumorClass,
+  formatApiError,
+} from "@/lib/api";
 
 type Props = {
   refreshTrigger?: number;
@@ -32,7 +37,6 @@ export default function Stats({ refreshTrigger }: Props) {
 
   function formatConfidence(avgConfidence: number): string {
     if (avgConfidence === undefined || avgConfidence === null) return "0.0%";
-    // avg_confidence is e.g. 0.82 representing 82%
     const val = avgConfidence <= 1 ? avgConfidence * 100 : avgConfidence;
     return `${val.toFixed(1)}%`;
   }
@@ -63,8 +67,7 @@ export default function Stats({ refreshTrigger }: Props) {
     },
     {
       value: stats?.most_common_prediction
-        ? stats.most_common_prediction.charAt(0).toUpperCase() +
-          stats.most_common_prediction.slice(1)
+        ? formatTumorClass(stats.most_common_prediction)
         : "N/A",
       label: "Most Common Class",
       color: "text-purple-400",
@@ -76,21 +79,24 @@ export default function Stats({ refreshTrigger }: Props) {
   return (
     <section id="stats" className="mx-auto max-w-7xl px-8 py-20">
       <div className="mb-10 text-center">
-        <h2 className="text-4xl font-bold tracking-tight">
+        <span className="text-xs font-semibold uppercase tracking-wider text-blue-400">
+          Real-Time Aggregates
+        </span>
+        <h2 className="mt-2 text-4xl font-bold tracking-tight text-white">
           Prediction Statistics & Analytics
         </h2>
-        <p className="mt-3 text-slate-400">
+        <p className="mt-3 text-sm text-slate-400 max-w-xl mx-auto">
           Aggregated analytics computed in real-time from inference history
         </p>
       </div>
 
       {/* Loading Skeleton */}
       {loading && !stats && (
-        <div className="grid gap-8 md:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="animate-pulse rounded-2xl border border-slate-800 bg-slate-900 p-8 text-center"
+              className="animate-pulse rounded-2xl border border-slate-800 bg-slate-900/90 p-8 text-center"
             >
               <div className="mx-auto h-10 w-24 rounded bg-slate-800" />
               <div className="mx-auto mt-4 h-4 w-32 rounded bg-slate-800/60" />
@@ -102,11 +108,11 @@ export default function Stats({ refreshTrigger }: Props) {
       {/* Error Banner */}
       {error && !stats && (
         <div className="rounded-2xl border border-red-800 bg-red-950/40 p-8 text-center">
-          <p className="text-red-300">Failed to load statistics from backend</p>
+          <p className="font-semibold text-red-300">Failed to load statistics from backend</p>
           <p className="mt-1 text-sm text-red-400">{error}</p>
           <button
             onClick={fetchStats}
-            className="mt-4 rounded-xl bg-red-800 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700"
+            className="mt-4 rounded-xl bg-red-800 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700 transition"
           >
             Retry Connection
           </button>
@@ -116,24 +122,26 @@ export default function Stats({ refreshTrigger }: Props) {
       {/* Stats Display */}
       {stats && (
         <>
-          <div className="grid gap-8 md:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {primaryCards.map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-2xl border border-slate-800 bg-slate-900 p-8 text-center shadow-lg transition hover:border-slate-700"
+                className="rounded-2xl border border-slate-800 bg-slate-900/90 p-8 text-center shadow-lg transition hover:border-slate-700"
               >
-                <h3 className={`text-4xl font-bold ${stat.color}`}>
+                <h3 className={`text-4xl font-bold tracking-tight ${stat.color}`}>
                   {stat.value}
                 </h3>
-                <p className="mt-3 text-slate-400">{stat.label}</p>
+                <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  {stat.label}
+                </p>
               </div>
             ))}
           </div>
 
           {/* Class Distribution Breakdown */}
           {stats.total_predictions > 0 && (
-            <div className="mt-12 rounded-2xl border border-slate-800 bg-slate-900 p-8">
-              <h3 className="mb-6 text-xl font-semibold">
+            <div className="mt-12 rounded-2xl border border-slate-800 bg-slate-900/90 p-8 shadow-xl">
+              <h3 className="mb-6 text-xl font-bold text-white">
                 Class Distribution & Percentages
               </h3>
 
@@ -141,10 +149,7 @@ export default function Stats({ refreshTrigger }: Props) {
                 {allClasses.map((cls) => {
                   const count = stats.class_distribution?.[cls] || 0;
                   const percentage = stats.class_percentages?.[cls] || 0;
-                  const formattedClass =
-                    cls === "notumor"
-                      ? "No Tumour"
-                      : cls.charAt(0).toUpperCase() + cls.slice(1);
+                  const formattedClass = formatTumorClass(cls);
 
                   return (
                     <div
@@ -162,10 +167,10 @@ export default function Stats({ refreshTrigger }: Props) {
 
                       <div className="mt-3 flex items-center justify-between text-xs text-slate-400">
                         <span>Share</span>
-                        <span>{percentage.toFixed(1)}%</span>
+                        <span className="font-mono">{percentage.toFixed(1)}%</span>
                       </div>
 
-                      <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-800">
+                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-800">
                         <div
                           className="h-full rounded-full bg-blue-500 transition-all duration-500"
                           style={{
