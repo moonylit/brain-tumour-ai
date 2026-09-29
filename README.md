@@ -118,8 +118,13 @@ Returns aggregated analytics calculated from prediction history:
 - `most_common_prediction`: most frequently predicted class
 
 ### `GET /evaluation`
-Returns model validation metrics:
-- `accuracy`, `precision`, `recall`, `f1_score`
+Returns comprehensive model validation metrics and structured curve coordinates computed from the trained ResNet50 model:
+- `accuracy`, `precision`, `recall`, `f1_score`: Overall performance metrics across the validation dataset
+- `class_labels`: Ordered tumor categories (`["glioma", "meningioma", "notumor", "pituitary"]`)
+- `confusion_matrix`: 4x4 count matrix of actual vs. predicted classifications
+- `roc_curve`: Per-class False Positive Rates (`fpr`), True Positive Rates (`tpr`), and Area Under Curve (`auc`)
+- `precision_recall_curve`: Per-class `precision`, `recall`, and `average_precision` (AP)
+- `plots`: Static image paths to pre-rendered high-resolution visualization charts
 
 ### `GET /evaluation/plots`
 Returns static image paths for:
@@ -140,7 +145,9 @@ Serves Grad-CAM explainability heatmaps corresponding to predictions.
 The Next.js frontend connects directly to the FastAPI backend:
 - **Centralized API Client**: All network interactions pass through `frontend/lib/api.ts` configured via `NEXT_PUBLIC_API_URL`.
 - **Live Health Indicator**: Navbar features a subtle `API Online` / `API Offline` badge polling `/health`.
-- **Real-Time Classification**: Uploaded scans immediately trigger neural network inference and display explainability heatmaps.
+- **Real-Time Classification**: Uploaded scans trigger neural network inference with clean clinical UI and explainability heatmaps.
+- **Dedicated Model Evaluation Section**: A dedicated evaluation section on the landing page featuring segmented controls (`[ Confusion Matrix ]`, `[ ROC Curve ]`, `[ Precision-Recall ]`) that render only one visualization at a time with contextual explanations.
+- **Consistent Clinical Nomenclature**: Displays "No Tumor" consistently instead of unformatted or uppercase tags.
 - **Dynamic History Management**: Filter history records by class, adjust limits, toggle sort direction, and preview heatmaps in full modals.
 - **Dynamic Analytics**: Dashboard cards and percentage bars update automatically with live data from `/statistics`.
 - **One-Click PDF Report**: Initiates real binary PDF downloads from `/report` with download progress and error feedback.
