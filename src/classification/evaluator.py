@@ -199,3 +199,60 @@ class Evaluator:
         )
 
         plt.close()
+
+        # Save structured evaluation data for API and dashboard consumption
+        class_names = ["glioma", "meningioma", "notumor", "pituitary"]
+        roc_data = {}
+        for index, name in enumerate(class_names):
+            fpr, tpr, _ = roc_curve(
+                binary_labels[:, index],
+                all_probabilities[:, index],
+            )
+            roc_auc = float(auc(fpr, tpr))
+            roc_data[name] = {
+                "fpr": [round(float(x), 4) for x in fpr],
+                "tpr": [round(float(x), 4) for x in tpr],
+                "auc": round(roc_auc, 4),
+            }
+
+        pr_data = {}
+        for index, name in enumerate(class_names):
+            precision, recall, _ = precision_recall_curve(
+                binary_labels[:, index],
+                all_probabilities[:, index],
+            )
+            ap = float(average_precision_score(
+                binary_labels[:, index],
+                all_probabilities[:, index],
+            ))
+            pr_data[name] = {
+                "precision": [round(float(x), 4) for x in precision],
+                "recall": [round(float(x), 4) for x in recall],
+                "average_precision": round(ap, 4),
+            }
+
+        evaluation_data = {
+            "accuracy": float(metrics["accuracy"]),
+            "precision": float(metrics["macro avg"]["precision"]),
+            "recall": float(metrics["macro avg"]["recall"]),
+            "f1_score": float(metrics["macro avg"]["f1-score"]),
+            "class_labels": class_names,
+            "confusion_matrix": cm.tolist(),
+            "roc_curve": roc_data,
+            "precision_recall_curve": pr_data,
+            "plots": {
+                "confusion_matrix": "/plots/confusion_matrix.png",
+                "roc_curve": "/plots/roc_curve.png",
+                "precision_recall_curve": "/plots/precision_recall_curve.png",
+            },
+        }
+
+        with open(
+            reports_dir / "evaluation_data.json",
+            "w",
+        ) as file:
+            json.dump(
+                evaluation_data,
+                file,
+                indent=4,
+            )

@@ -42,11 +42,28 @@ export interface StatisticsResponse {
   most_common_prediction: string | null;
 }
 
+export interface RocCurveData {
+  fpr: number[];
+  tpr: number[];
+  auc: number;
+}
+
+export interface PrecisionRecallCurveData {
+  precision: number[];
+  recall: number[];
+  average_precision: number;
+}
+
 export interface EvaluationMetrics {
   accuracy: number;
   precision: number;
   recall: number;
   f1_score: number;
+  class_labels?: string[];
+  confusion_matrix?: number[][];
+  roc_curve?: Record<string, RocCurveData>;
+  precision_recall_curve?: Record<string, PrecisionRecallCurveData>;
+  plots?: EvaluationPlots;
 }
 
 export interface EvaluationPlots {
@@ -216,3 +233,16 @@ export function formatApiError(error: unknown): string {
   }
   return "An unexpected error occurred.";
 }
+
+/**
+ * Cleanly format tumour class name for display (e.g. "notumor" -> "No Tumor")
+ */
+export function formatTumorClass(className: string): string {
+  if (!className) return "";
+  const lower = className.trim().toLowerCase();
+  if (lower === "notumor" || lower === "no_tumor" || lower === "no tumor") {
+    return "No Tumor";
+  }
+  return className.charAt(0).toUpperCase() + className.slice(1).toLowerCase();
+}
+

@@ -21,6 +21,7 @@ from app.schemas import (
 from app.evaluation import (
     load_metrics,
     load_plot_paths,
+    load_evaluation_data,
 )
 from app.statistics import get_prediction_statistics
 
@@ -288,7 +289,7 @@ Returns:
 )
 def evaluation():
 
-    return load_metrics()
+    return load_evaluation_data()
 
 
 @app.get(
